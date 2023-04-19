@@ -1,0 +1,13 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+}
+
+.header {
+    background-color: inherit;
+    flex-basis: fit-content !important;
+}
