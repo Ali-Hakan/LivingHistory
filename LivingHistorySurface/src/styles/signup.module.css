@@ -1,0 +1,16 @@
+.form {
+    width: 400px;
+}
+
+.button {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+._item {
+    margin-bottom: 18px;
+}
+
+.card {
+    padding-block-end: 0px;
+}

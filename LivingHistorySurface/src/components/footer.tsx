@@ -5,7 +5,7 @@ const Header: React.FC = () => {
     const { Footer } = Layout;
     return (
         <Footer
-            className={styles["header"]}>
+            className={styles["footer"]}>
             {"© 2023-2023, LivingHistory.com, relinquishes all rights granted by copyright law, feel free to abuse it."}
         </Footer>
     );

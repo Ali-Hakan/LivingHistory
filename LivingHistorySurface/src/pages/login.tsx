@@ -4,7 +4,7 @@ import { CloseCircleOutlined, LockOutlined, UserOutlined } from "@ant-design/ico
 import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import _Item from "@/components/_item";
+import { _Item } from "@/components/styled";
 
 const Login: React.FC = () => {
     const { Content } = Layout;
@@ -21,7 +21,7 @@ const Login: React.FC = () => {
                         initialValues={{ remember: true }}>
                         <_Item
                             name="username"
-                            rules={[{ required: true, message: "Your username is what we desire." }]}>
+                            rules={[{ required: true, message: "Thy username is what we doth desire." }]}>
                             <Input
                                 prefix={<UserOutlined className="site-form-item-icon" />}
                                 placeholder="Username"
@@ -30,7 +30,7 @@ const Login: React.FC = () => {
                         </_Item>
                         <_Item
                             name="password"
-                            rules={[{ required: true, message: "Share your secret with us." }]}>
+                            rules={[{ required: true, message: "Unveil thy secret unto us." }]}>
                             <Input.Password
                                 prefix={<LockOutlined className="site-form-item-icon" />}
                                 type="password"
@@ -44,7 +44,7 @@ const Login: React.FC = () => {
                                 valuePropName="checked"
                                 noStyle>
                                 <Checkbox>
-                                    {"Remember me"}
+                                    {"Remember me!"}
                                 </Checkbox>
                             </_Item>
                         </_Item>
