@@ -47,7 +47,7 @@ const Signup: React.FC = () => {
             <Content
                 className={styles["content"]}>
                 <Card
-                    className={_styles["card"]}>
+                    bodyStyle={{paddingBlockEnd: "0px"}}>
                     <Form
                         {...formItemLayout}
                         className={_styles["form"]}
