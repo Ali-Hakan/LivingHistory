@@ -5,39 +5,40 @@ import styles from "../styles/login.module.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { _Item, _Password } from "@/components/styled";
+import { RegisterFormData } from "../modals/types";
+import { formItemLayout, tailFormItemLayout } from "../styles/component-props";
 
 const Signup: React.FC = () => {
     const { Content } = Layout;
     const { Option } = Select;
     const [form] = Form.useForm();
-    const [modalVisible, setModalVisible] = useState(false);
+    const [data, setData] = useState<RegisterFormData>()
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-    const formItemLayout = {
-        labelCol: {
-            xs: { span: 24 },
-            sm: { span: 8 },
-        },
-        wrapperCol: {
-            xs: { span: 24 },
-            sm: { span: 16 },
+    const onFinish = async (values: RegisterFormData) => {
+        setData(() => {
+            const data: RegisterFormData = {
+                email: values.email,
+                password: values.password,
+                username: values.username,
+                nickname: values.nickname,
+                gender: values.gender
+            }
+            return data;
+        });
+        try {
+            const response = await fetch("http://localhost:8080/api/user", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+            const result = await response.json();
+            console.log(result);
+        } catch (error) {
+            console.error(error);
         }
-    };
-
-    const tailFormItemLayout = {
-        wrapperCol: {
-            xs: {
-                span: 24,
-                offset: 0,
-            },
-            sm: {
-                span: 16,
-                offset: 8,
-            },
-        },
-    };
-
-    function onFinish(values: any): void {
-        throw new Error("Function not implemented.");
     }
 
     return (
@@ -47,7 +48,7 @@ const Signup: React.FC = () => {
             <Content
                 className={styles["content"]}>
                 <Card
-                    bodyStyle={{paddingBlockEnd: "0px"}}>
+                    bodyStyle={{ paddingBlockEnd: "0px" }}>
                     <Form
                         {...formItemLayout}
                         className={_styles["form"]}
@@ -127,20 +128,13 @@ const Signup: React.FC = () => {
                             label="Gender">
                             <Select
                                 placeholder="Human">
-                                <Option value="male">{"Male"}</Option>
-                                <Option value="female">{"Female"}</Option>
-                                <Option value="other">{"Other"}</Option>
+                                <Option value="Male">{"Male"}</Option>
+                                <Option value="Female">{"Female"}</Option>
+                                <Option value="Other">{"Other"}</Option>
                             </Select>
                         </Form.Item>
-                        <Form.Item
-                            name="agreement"
-                            valuePropName="checked"
-                            rules={[
-                                {
-                                    validator: (_, value) =>
-                                        value ? Promise.resolve() : Promise.reject(new Error("Thou canst not evade this, for it is thine obligation.")),
-                                },
-                            ]}
+                        <_Item
+                            className={_styles["_item-button"]}
                             {...tailFormItemLayout}>
                             <Button
                                 type="primary"
@@ -149,7 +143,20 @@ const Signup: React.FC = () => {
                                 block>
                                 {"Submit"}
                             </Button>
-                            <Checkbox>
+                        </_Item>
+                        <Form.Item
+                            name="agreement"
+                            valuePropName="checked"
+                            initialValue={false}
+                            rules={[
+                                {
+                                    validator: (_, value) =>
+                                        value ? Promise.resolve() : Promise.reject(new Error("Thou canst not evade this, for it is thine obligation.")),
+                                },
+                            ]}
+                            {...tailFormItemLayout}>
+                            <Checkbox
+                                onChange={(e) => { form.setFieldValue("agreement", e.target.checked) }}>
                                 {"I agree to the"}
                             </Checkbox>
                             <Button
@@ -158,27 +165,27 @@ const Signup: React.FC = () => {
                                 onClick={() => setModalVisible(true)}>
                                 {"Terms and Conditions"}
                             </Button>
-                            <Modal
-                                title="Terms and Conditions"
-                                open={modalVisible}
-                                bodyStyle={{ fontFamily: "sans-serif" }}
-                                closable={false}
-                                footer={[
-                                    <><Button
+                        </Form.Item>
+                        <Modal
+                            title="Terms and Conditions"
+                            open={modalVisible}
+                            bodyStyle={{ fontFamily: "sans-serif" }}
+                            closable={false}
+                            footer={[
+                                <><Button
+                                    className={styles["form-button-login"]}
+                                    type={"primary"}
+                                    onClick={() => setModalVisible(false)}>
+                                    {"Yes!"}
+                                </Button>
+                                    <Button
                                         className={styles["form-button-login"]}
                                         type={"primary"}
                                         onClick={() => setModalVisible(false)}>
-                                        {"Yes!"}
-                                    </Button>
-                                        <Button
-                                            className={styles["form-button-login"]}
-                                            type={"primary"}
-                                            onClick={() => setModalVisible(false)}>
-                                            {"Certainly!"}
-                                        </Button></>]}>
-                                {"Verily, by submitting this form, thou dost accept the sacrifice of thine unborn child to the devil. May God forbid thy sin and cleanse thy soul, for such a pact with the infernal powers canst bring naught but damnation upon thee."}
-                            </Modal>
-                        </Form.Item>
+                                        {"Certainly!"}
+                                    </Button></>]}>
+                            {"Verily, by submitting this form, thou dost accept the sacrifice of thine unborn child to the devil. May God forbid thy sin and cleanse thy soul, for such a pact with the infernal powers canst bring naught but damnation upon thee."}
+                        </Modal>
                     </Form>
                 </Card>
             </Content>
