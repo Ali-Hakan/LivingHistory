@@ -11,6 +11,6 @@
     margin-bottom: 18px;
 }
 
-.card {
-    padding-block-end: 0px !important;
+._item-button {
+    margin-bottom: 0px;
 }
