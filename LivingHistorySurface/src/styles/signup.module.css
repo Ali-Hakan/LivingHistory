@@ -14,3 +14,7 @@
 ._item-button {
     margin-bottom: 0px;
 }
+
+.model-button {
+    background-color: indianred !important;
+}

@@ -3,8 +3,7 @@ import styled from "styled-components";
 
 export const _Item = styled(Form.Item)`
 .ant-form-item-explain-error {
-    font-family: ui-sans-serif;
-    font-style: italic;
+    font-family: math;
 }`
 
 export const _Password = styled(Input.Password)`

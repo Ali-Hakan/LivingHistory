@@ -4,7 +4,6 @@
 
 @layer components {
   #__next {
-      @apply h-full bg-red-500;
   }
   html,
   body {
