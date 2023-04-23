@@ -1,0 +1,4 @@
+.header {
+    background-color: inherit;
+    flex-basis: fit-content !important;
+}

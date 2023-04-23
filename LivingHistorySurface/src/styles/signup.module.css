@@ -1,0 +1,20 @@
+.form {
+    width: 400px;
+}
+
+.button {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+._item {
+    margin-bottom: 18px;
+}
+
+._item-button {
+    margin-bottom: 0px;
+}
+
+.model-button {
+    background-color: indianred !important;
+}

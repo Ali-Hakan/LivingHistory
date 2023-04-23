@@ -1,0 +1,36 @@
+.layout {
+    height: -webkit-fill-available;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+}
+
+.form {
+    max-width: 300px;
+}
+
+.form-button-login {
+    background-color: cornflowerblue !important;
+}
+
+.form-button-signup {
+    font-family: sans-serif;
+}
+
+.form-input-icon {
+    display: flex;
+}
+
+.form-item {
+    margin-bottom: 0 !important;
+}
+
