@@ -8,7 +8,7 @@ const Header: React.FC = () => {
         <Header
             className={styles["header"]}>
             <Image
-                src={"/images/Living-History.png"}
+                src={"/images/living-history.png"}
                 alt={"LivingHistory"}
                 width={500}
                 height={500}

@@ -1,13 +1,13 @@
 import { useState, useCallback, useMemo } from "react";
-import { Button, Card, Checkbox, Form, Input, Layout, Modal, Select, message } from "antd";
+import { Button, Card, Checkbox, Form, Input, Layout, Modal, Select, message, Divider } from "antd";
 import { _Item, _Password } from "@/components/styled";
 import { RegisterFormData } from "../modals/types";
 import { formItemLayout, tailFormItemLayout } from "../styles/component-props";
 import { useRouter } from "next/router";
-import _styles from "../styles/signup.module.css";
-import styles from "../styles/login.module.css";
+import styles from "../styles/signup.module.css";
 import Header from "@/components/header";
-import Footer from "@/components/footer";
+import Footer from "@/components/footer"
+import { LoginOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -22,12 +22,17 @@ const Signup: React.FC = () => {
 
     useMemo(() => data, [data]);
 
+    const onClick = useCallback(async () => {
+        await router.push("/login");
+    }, [router]);
+
     const fetchData = useCallback(async (data: RegisterFormData) => {
         try {
             messageApi.open({
                 key: "signup",
                 type: "loading",
                 content: "Hold thee a moment, fair soul...",
+                duration: 1
             });
             const response = await fetch("http://localhost:8080/api/users", {
                 method: "POST",
@@ -40,8 +45,8 @@ const Signup: React.FC = () => {
                 messageApi.success({
                     key: "signup",
                     content: "Rejoice, fair traveler, for thou hast attained the boon thou sought!",
-                    duration: 2,
-                });
+                    duration: 2
+                }, 1000);
                 setTimeout(() => {
                     messageApi.info({
                         key: "signup",
@@ -93,18 +98,17 @@ const Signup: React.FC = () => {
             {contextHolder}
             <Header />
             <Content className={styles["content"]}>
-                <Card bodyStyle={{ paddingBlockEnd: "0px" }}>
-                    <Form
+                <Card
+                    bodyStyle={{ paddingBlockEnd: "0px" }}>
+                    <Form className={styles["form"]}
                         {...formItemLayout}
-                        className={_styles["form"]}
                         form={form}
                         name="register"
                         onFinish={onFinish}
                         initialValues={{ prefix: "90" }}
                         style={{ maxWidth: 600 }}
                         scrollToFirstError>
-                        <_Item
-                            className={_styles["_item"]}
+                        <_Item className={styles["_item"]}
                             name="email"
                             label="E-mail"
                             rules={[{
@@ -117,22 +121,20 @@ const Signup: React.FC = () => {
                             }]}>
                             <Input />
                         </_Item>
-                        <_Item
-                            className={_styles["_item"]}
+                        <_Item className={styles["_item"]}
                             name="password"
                             label="Password"
                             rules={[
                                 {
                                     required: true,
-                                    message: "I shall not reveal thy secret to anyone... mayhaps.",
-                                },
+                                    message: "I shall not reveal thy secret to anyone... mayhaps."
+                                }
                             ]}
                             hasFeedback>
                             <_Password />
                         </_Item>
-                        <_Item
+                        <_Item className={styles["_item"]}
                             {...formItemLayout}
-                            className={_styles["_item"]}
                             name="confirm"
                             label="Confirm Password"
                             dependencies={["password"]}
@@ -140,7 +142,7 @@ const Signup: React.FC = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Equality is the crux of this matter.",
+                                    message: "Equality is the crux of this matter."
                                 },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
@@ -150,13 +152,12 @@ const Signup: React.FC = () => {
                                         return Promise.reject(
                                             new Error("Equality is the crux of this matter.")
                                         );
-                                    },
-                                }),
+                                    }
+                                })
                             ]}>
                             <_Password />
                         </_Item>
-                        <_Item
-                            className={_styles["_item"]}
+                        <_Item className={styles["_item"]}
                             name="username"
                             label="Username"
                             rules={[{
@@ -166,8 +167,7 @@ const Signup: React.FC = () => {
                             }]}>
                             <Input />
                         </_Item>
-                        <_Item
-                            className={_styles["_item"]}
+                        <_Item className={styles["_item"]}
                             name="nickname"
                             label="Nickname"
                             tooltip="Thus shall others perceive thee, as portrayed herein."
@@ -178,32 +178,33 @@ const Signup: React.FC = () => {
                             }]}>
                             <Input />
                         </_Item>
-                        <Form.Item name="gender" label="Gender">
-                            <Select placeholder="Human">
+                        <Form.Item
+                            name="gender" label="Gender">
+                            <Select
+                                placeholder="Human">
                                 <Option value="Male">{"Male"}</Option>
                                 <Option value="Female">{"Female"}</Option>
                                 <Option value="Other">{"Other"}</Option>
                             </Select>
                         </Form.Item>
-                        <_Item
-                            className={_styles["_item-button"]}
+                        <_Item className={styles["_item-no-margin"]}
                             {...tailFormItemLayout}>
                             <Button
                                 type="primary"
                                 htmlType="submit"
-                                className={styles["form-button-login"]}
+                                className={styles["form-button"]}
                                 block>
                                 {"Submit"}
                             </Button>
                         </_Item>
-                        <Form.Item
+                        <_Item className={styles["_item-no-margin"]}
                             name="agreement"
                             valuePropName="checked"
                             initialValue={false}
                             rules={[{
                                 validator: (_, value) => value
                                     ? Promise.resolve()
-                                    : Promise.reject(new Error("Thou canst not evade this, for it is thine obligation.")),
+                                    : Promise.reject(new Error("Thou canst not evade this, for it is thine obligation."))
                             }]}
                             {...tailFormItemLayout}>
                             <Checkbox
@@ -213,11 +214,20 @@ const Signup: React.FC = () => {
                                 disabled={checkboxDisabled}>
                                 {"I agree to the"}
                             </Checkbox>
-                            <Button
-                                className={_styles["button"]}
+                            <Button className={styles["button"]}
                                 type={"link"}
                                 onClick={() => setModalVisible(true)}>
                                 {"Terms and Conditions"}
+                            </Button>
+                        </_Item>
+                        <Form.Item
+                            {...tailFormItemLayout}>
+                            <Divider className={styles["divider"]}/>
+                            <Button className={styles["login-button"]}
+                                type="default"
+                                onClick={onClick}>
+                                {"Log in now!"}
+                                <LoginOutlined />
                             </Button>
                         </Form.Item>
                         <Modal
@@ -228,7 +238,7 @@ const Signup: React.FC = () => {
                             footer={[
                                 <>
                                     <Button
-                                        className={styles["form-button-login"]}
+                                        className={styles["model-button-accept"]}
                                         type={"primary"}
                                         onClick={() => {
                                             setModalVisible(false);
@@ -237,7 +247,7 @@ const Signup: React.FC = () => {
                                         {"Accept"}
                                     </Button>
                                     <Button
-                                        className={_styles["model-button"]}
+                                        className={styles["model-button-decline"]}
                                         type={"primary"}
                                         onClick={() => {
                                             setModalVisible(false);
@@ -257,3 +267,7 @@ const Signup: React.FC = () => {
 };
 
 export default Signup;
+
+function async(): any {
+    throw new Error("Function not implemented.");
+}

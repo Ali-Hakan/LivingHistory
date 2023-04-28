@@ -1,3 +1,22 @@
+.layout {
+    height: -webkit-fill-available;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-position: center;
+    background-size: cover !important;
+    background: url("../../public/images/background.png");
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+}
+
 .form {
     width: 400px;
 }
@@ -11,10 +30,28 @@
     margin-bottom: 18px;
 }
 
-._item-button {
+._item-no-margin {
     margin-bottom: 0px;
 }
 
-.model-button {
-    background-color: indianred !important;
+.model-button-decline {
+    background-color: indianred;
 }
+
+.model-button-accept {
+    background-color: cornflowerblue;
+}
+
+.form-button {
+    background-color: cornflowerblue;
+}
+
+.login-button {
+    display: flex;
+    align-items: center;
+}
+
+.divider {
+    margin: 12px;
+}
+
