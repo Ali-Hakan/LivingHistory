@@ -1,0 +1,30 @@
+.image {
+    margin-left: 1%;
+}
+
+.layout {
+    height: -webkit-fill-available;
+}
+
+.header {
+    display: flex;
+    background-color: #B67D7C;
+}
+
+.breadcrumb-col {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+}
+
+.content {
+    padding: 4%;
+}
+
+.breadcrumb {
+    margin-bottom: 1%;
+}
+
+.inside-content {
+    background-color: white;
+}

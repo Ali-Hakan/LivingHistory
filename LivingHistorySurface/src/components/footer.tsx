@@ -6,7 +6,7 @@ const Header: React.FC = () => {
     return (
         <Footer
             className={styles["footer"]}>
-            {"© 2023-2023, LivingHistory.com, relinquishes all rights granted by copyright law, feel free to abuse it."}
+            {"© 2023-2023, LivingHistory.com, hereby waives all rights granted by copyright law. You are free to use and distribute the content without any restrictions."}
         </Footer>
     );
 };

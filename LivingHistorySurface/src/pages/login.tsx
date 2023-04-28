@@ -2,8 +2,8 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { Button, Card, Checkbox, Divider, Form, Input, Layout, message } from "antd";
 import { CloseCircleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
-import Link from "next/link";
 import { memo } from "react";
+import Link from "next/link";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import styles from "../styles/login.module.css";
@@ -56,15 +56,14 @@ const Login: React.FC = () => {
             <Header />
             <Content className={styles["content"]}>
                 <Card>
-                    <Form
+                    <Form className={styles["form"]}
                         name="login"
-                        className={styles["form"]}
                         onFinish={onFinish}
                         initialValues={{ remember: true }}>
                         <Form.Item
                             name="username"
                             rules={[
-                                { required: true, message: "Thy username is what we doth desire." },
+                                { required: true, message: "Thy username is what we doth desire." }
                             ]}
                             initialValue={value ?? ""}>
                             <Input
@@ -87,10 +86,9 @@ const Login: React.FC = () => {
                             </Form.Item>
                         </Form.Item>
                         <Form.Item>
-                            <Button
+                            <Button className={styles["form-button-login"]}
                                 type="primary"
                                 htmlType="submit"
-                                className={styles["form-button-login"]}
                                 block
                                 loading={loading}>
                                 {"Log in"}
@@ -99,10 +97,9 @@ const Login: React.FC = () => {
                         <Divider plain>{"New to Living History?"}</Divider>
                         <Form.Item className={styles["form-item"]}>
                             <Link href={"/signup"}>
-                                <Button
+                                <Button className={styles["form-button-signup"]}
                                     type="default"
                                     htmlType="submit"
-                                    className={styles["form-button-signup"]}
                                     block>
                                     {"Create your account!"}
                                 </Button>

@@ -4,6 +4,7 @@
 
 @layer components {
   #__next {
+      @apply h-full;
   }
   html,
   body {
@@ -36,4 +37,3 @@ body {
     rgb(var(--background-start-rgb));
     height: -webkit-fill-available;
 }
-
