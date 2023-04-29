@@ -1,13 +1,13 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Button, Card, Checkbox, Form, Input, Layout, Modal, Select, message, Divider } from "antd";
 import { _Item, _Password } from "@/components/styled";
 import { RegisterFormData } from "../modals/types";
 import { formItemLayout, tailFormItemLayout } from "../styles/component-props";
 import { useRouter } from "next/router";
+import { LoginOutlined } from "@ant-design/icons";
 import styles from "../styles/signup.module.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer"
-import { LoginOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -15,12 +15,22 @@ const { Option } = Select;
 const Signup: React.FC = () => {
     const router = useRouter();
     const [form] = Form.useForm();
+    const [messageApi, contextHolder] = message.useMessage();
     const [data, setData] = useState<RegisterFormData>();
     const [modalVisible, setModalVisible] = useState<boolean>(false);
-    const [messageApi, contextHolder] = message.useMessage();
     const [checkboxDisabled, setCheckboxDisabled] = useState<boolean>(false);
+    const [termsAndConditions, setTermsAndConditions] = useState<string>();
 
     useMemo(() => data, [data]);
+
+    useEffect(() => {
+        const termsAndConditions = async () => {
+          const response = await fetch("/texts/terms-and-conditions.txt");
+          const text = await response.text();
+          setTermsAndConditions(text);
+        };
+        termsAndConditions();
+      }, []);
 
     const onClick = useCallback(async () => {
         await router.push("/login");
@@ -127,7 +137,7 @@ const Signup: React.FC = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: "I shall not reveal thy secret to anyone... mayhaps."
+                                    message: "Be thou certain that thou art the sole knower thereof."
                                 }
                             ]}
                             hasFeedback>
@@ -142,7 +152,7 @@ const Signup: React.FC = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: "Equality is the crux of this matter."
+                                    message: "Thou must provide the same one."
                                 },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
@@ -150,7 +160,7 @@ const Signup: React.FC = () => {
                                             return Promise.resolve();
                                         }
                                         return Promise.reject(
-                                            new Error("Equality is the crux of this matter.")
+                                            new Error("Thou must provide the same one.")
                                         );
                                     }
                                 })
@@ -162,7 +172,7 @@ const Signup: React.FC = () => {
                             label="Username"
                             rules={[{
                                 required: true,
-                                message: "Every soul hath a name, and deserves to be called by it.",
+                                message: "Verily, the names thou bearest doth mirror thy very being.",
                                 whitespace: true
                             }]}>
                             <Input />
@@ -233,7 +243,7 @@ const Signup: React.FC = () => {
                         <Modal
                             title="Terms and Conditions"
                             open={modalVisible}
-                            bodyStyle={{ fontFamily: "sans-serif" }}
+                            bodyStyle={{ fontFamily: "sans-serif", whiteSpace: "pre-line" }}
                             closable={false}
                             footer={[
                                 <>
@@ -256,7 +266,7 @@ const Signup: React.FC = () => {
                                         {"Decline"}
                                     </Button>
                                 </>]}>
-                            {"Verily, by submitting this form, thou dost accept the sacrifice of thine unborn child to the devil. May God forbid thy sin and cleanse thy soul, for such a pact with the infernal powers canst bring naught but damnation upon thee."}
+                            {termsAndConditions}
                         </Modal>
                     </Form>
                 </Card>
@@ -267,7 +277,3 @@ const Signup: React.FC = () => {
 };
 
 export default Signup;
-
-function async(): any {
-    throw new Error("Function not implemented.");
-}
