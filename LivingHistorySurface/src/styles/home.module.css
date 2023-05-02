@@ -1,14 +1,52 @@
-.image {
-    margin-left: 1%;
+.header-inside {
+    padding-inline: 0;
+    background: inherit;
 }
 
-.layout {
-    height: -webkit-fill-available;
+.menu {
+    -webkit-text-stroke: thin;
 }
 
-.header {
+.layout-inside {
+    background: none;
+}
+
+.content-inside {
+    background-color: white;
+}
+
+.typography {
     display: flex;
-    background-color: #B67D7C;
+    font-family: "winter-house";
+    font-size: small;
+    align-items: baseline;
+}
+
+.button-modal-date {
+    font-family: "winter-house";
+    font-size: small;
+    display: flex;
+    align-items: flex-end;
+    background-color: gainsboro;
+}
+
+.button-modal-add-date {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form {
+    padding: 3%;
+}
+
+.form-date {
+    padding: 3%;
+    padding-top: 0 !important;
+}
+
+.breadcrumb {
+    margin-bottom: 1%;
 }
 
 .breadcrumb-col {
@@ -17,14 +55,31 @@
     column-gap: 8px;
 }
 
-.content {
+.content-outside {
     padding: 4%;
 }
 
-.breadcrumb {
-    margin-bottom: 1%;
+.layout-outside {
+    height: -webkit-fill-available;
+    background-position: center;
+    background-size: cover !important;
+    background: url("../../public/images/background-home.png");
 }
 
-.inside-content {
-    background-color: white;
+.sider {
+    background: none !important;
+}
+
+.header-outside {
+    display: flex;
+    background: inherit;
+}
+
+.image {
+    margin-left: 1%;
+}
+
+@font-face {
+    font-family: "winter-house";
+    src: url("../../public/fonts/KingsAndPirates-p7EAK.ttf") format("truetype");
 }

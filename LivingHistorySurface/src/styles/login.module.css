@@ -11,8 +11,6 @@
 .content {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
     align-items: center;
     overflow-x: auto;
 }
@@ -21,19 +19,18 @@
     max-width: 300px;
 }
 
-.form-button-login {
+.form__item__button {
     background-color: cornflowerblue !important;
 }
 
-.form-button-signup {
+.link__button {
     font-family: sans-serif;
 }
 
-.form-input-icon {
+.icon {
     display: flex;
 }
 
-.form-item {
+.form__item {
     margin-bottom: 0 !important;
 }
-
