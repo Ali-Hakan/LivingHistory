@@ -58,10 +58,12 @@ const Login: React.FC = () => {
     }, [router]);
 
     return (
-        <Layout className={styles["layout"]}>
+        <Layout 
+            className={styles["layout"]}>
             {contextHolder}
             <Header />
-            <Content className={styles["content"]}>
+            <Content 
+                className={styles["content"]}>
                 <Card>
                     <Form
                         className={styles["form"]}
@@ -71,7 +73,7 @@ const Login: React.FC = () => {
                     >
                         <Form.Item
                             name="username"
-                            initialValue={value ?? ""}
+                            initialValue={value}
                             rules={[{ required: true, message: "Please enter your username." }]}
                         >
                             <Input
@@ -91,8 +93,12 @@ const Login: React.FC = () => {
                                 allowClear={{ clearIcon: <CloseCircleOutlined className={styles["icon"]} /> }}
                             />
                         </Form.Item>
-                        <Form.Item name="remember" valuePropName="checked">
-                            <Checkbox>Remember me</Checkbox>
+                        <Form.Item 
+                            name="remember" 
+                            valuePropName="checked">
+                            <Checkbox>
+                                {"Remember me"}
+                            </Checkbox>
                         </Form.Item>
                         <Form.Item>
                             <Button
@@ -102,19 +108,24 @@ const Login: React.FC = () => {
                                 block
                                 loading={loading}
                             >
-                                Log In
+                                {"Log In"}
                             </Button>
                         </Form.Item>
-                        <Divider plain>New to Living History?</Divider>
-                        <Form.Item className={styles["form__item"]}>
-                            <Link href="/signup">
+                        <Divider 
+                            plain={true}>
+                            {"New to Living History?"}
+                        </Divider>
+                        <Form.Item 
+                            className={styles["form__item"]}>
+                            <Link 
+                                href="/signup">
                                 <Button
                                     className={styles["link__button"]}
                                     type="default"
                                     htmlType="submit"
                                     block
                                 >
-                                    Create your account
+                                    {"Create your account"}
                                 </Button>
                             </Link>
                         </Form.Item>
