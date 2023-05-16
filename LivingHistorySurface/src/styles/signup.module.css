@@ -11,8 +11,6 @@
 .content {
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
     align-items: center;
     overflow-x: auto;
 }
@@ -22,36 +20,37 @@
 }
 
 .button {
-    padding-left: 0px;
-    padding-right: 0px;
+    padding: 0;
 }
 
 ._item {
     margin-bottom: 18px;
 }
 
-._item-no-margin {
-    margin-bottom: 0px;
+._item--secondary {
+    margin-bottom: 0;
 }
 
-.model-button-decline {
-    background-color: indianred;
-}
-
-.model-button-accept {
+.modal__button--secondary,
+.modal__button--first,
+._item__button {
+    display: inline-block;
+    width: 85px;
     background-color: cornflowerblue;
 }
 
-.form-button {
-    background-color: cornflowerblue;
+.modal__button--secondary {
+    background-color: darkgrey;
 }
 
-.login-button {
+._item__button,
+.form__item__button {
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 .divider {
     margin: 12px;
 }
-

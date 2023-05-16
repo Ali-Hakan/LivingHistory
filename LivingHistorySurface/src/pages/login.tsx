@@ -14,36 +14,43 @@ interface LoginValues {
     remember: boolean;
 }
 
+const API_URL = "http://localhost:8080/api/login";
+
+async function loginRequest(values: LoginValues) {
+    const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+    });
+    const data = await response.json();
+    return data;
+}
+
 const Login: React.FC = () => {
     const router = useRouter();
-    const { Content } = Layout;
     const { value } = router.query;
-    const [loading, setLoading] = useState<boolean>(false);
+    const { Content } = Layout;
+    const [loading, setLoading] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
 
     const onFinish = useCallback(async (values: LoginValues) => {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:8080/api/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(values),
-            });
-            const data = await response.json();
+            const data = await loginRequest(values);
             if (data.success) {
                 localStorage.setItem("token", data.token);
                 router.push("/home");
             } else {
                 messageApi.error({
                     key: "signup",
-                    content: "Thy username or secret is a lie.",
+                    content: "The provided credentials do not appear to be accurate.",
                     duration: 2
                 });
             }
         } catch (e) {
             messageApi.error({
                 key: "signup",
-                content: "O Alas! Something hath gone awry.",
+                content: "Unfortunately, an issue has arisen.",
                 duration: 2
             });
         }
@@ -51,57 +58,74 @@ const Login: React.FC = () => {
     }, [router]);
 
     return (
-        <Layout className={styles["layout"]}>
+        <Layout 
+            className={styles["layout"]}>
             {contextHolder}
             <Header />
-            <Content className={styles["content"]}>
+            <Content 
+                className={styles["content"]}>
                 <Card>
-                    <Form className={styles["form"]}
+                    <Form
+                        className={styles["form"]}
                         name="login"
                         onFinish={onFinish}
-                        initialValues={{ remember: true }}>
+                        initialValues={{ remember: true }}
+                    >
                         <Form.Item
                             name="username"
-                            rules={[
-                                { required: true, message: "Thy username is what we doth desire." }
-                            ]}
-                            initialValue={value ?? ""}>
+                            initialValue={value}
+                            rules={[{ required: true, message: "Please enter your username." }]}
+                        >
                             <Input
-                                prefix={<UserOutlined className="site-form-item-icon" />}
+                                prefix={<UserOutlined />}
                                 placeholder="Username"
-                                allowClear={{ clearIcon: <CloseCircleOutlined className={styles["form-input-icon"]} /> }} />
+                                allowClear={{ clearIcon: <CloseCircleOutlined className={styles["icon"]} /> }}
+                            />
                         </Form.Item>
                         <Form.Item
                             name="password"
-                            rules={[{ required: true, message: "Unveil thy secret unto us." }]}>
+                            rules={[{ required: true, message: "Please enter your password." }]}
+                        >
                             <Input.Password
-                                prefix={<LockOutlined className="site-form-item-icon" />}
+                                prefix={<LockOutlined />}
                                 type="password"
                                 placeholder="Password"
-                                allowClear={{ clearIcon: <CloseCircleOutlined className={styles["form-input-icon"]} /> }} />
+                                allowClear={{ clearIcon: <CloseCircleOutlined className={styles["icon"]} /> }}
+                            />
+                        </Form.Item>
+                        <Form.Item 
+                            name="remember" 
+                            valuePropName="checked">
+                            <Checkbox>
+                                {"Remember me"}
+                            </Checkbox>
                         </Form.Item>
                         <Form.Item>
-                            <Form.Item name="remember" valuePropName="checked" noStyle>
-                                <Checkbox>{"Remember me!"}</Checkbox>
-                            </Form.Item>
-                        </Form.Item>
-                        <Form.Item>
-                            <Button className={styles["form-button-login"]}
+                            <Button
+                                className={styles["form__item__button"]}
                                 type="primary"
                                 htmlType="submit"
                                 block
-                                loading={loading}>
-                                {"Log in"}
+                                loading={loading}
+                            >
+                                {"Log In"}
                             </Button>
                         </Form.Item>
-                        <Divider plain>{"New to Living History?"}</Divider>
-                        <Form.Item className={styles["form-item"]}>
-                            <Link href={"/signup"}>
-                                <Button className={styles["form-button-signup"]}
+                        <Divider 
+                            plain={true}>
+                            {"New to Living History?"}
+                        </Divider>
+                        <Form.Item 
+                            className={styles["form__item"]}>
+                            <Link 
+                                href="/signup">
+                                <Button
+                                    className={styles["link__button"]}
                                     type="default"
                                     htmlType="submit"
-                                    block>
-                                    {"Create your account!"}
+                                    block
+                                >
+                                    {"Create your account"}
                                 </Button>
                             </Link>
                         </Form.Item>

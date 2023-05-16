@@ -1,30 +1,166 @@
+.header__inside {
+    padding-inline: 0;
+    background: inherit;
+}
+
+.menu {
+    -webkit-text-stroke: thin;
+}
+
+.col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.layout__inside {
+    background: none;
+}
+
+.layout__modal {
+    background: inherit;
+    flex-direction: row;
+    padding: 3%;
+}
+
+.content__inside {
+    background-color: white;
+}
+
+.typography {
+    display: flex;
+    font-family: "winter-house";
+    font-size: small;
+    align-items: baseline;
+}
+
+.button__modal__date {
+    font-family: "winter-house";
+    font-size: small;
+    display: flex;
+    align-items: flex-end;
+    background-color: gainsboro;
+}
+
+.button__upload,
+.button__modal__add__date {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form {
+    padding: 3%;
+}
+
+.form__date {
+    padding: 3%;
+    padding-top: 0 !important;
+}
+
+.content__outside {
+    padding: 4%;
+    padding-top: 6%;
+}
+
+.layout__outside {
+    height: fit-content;
+    min-height: 100vh;
+    background-position: center;
+    background: url("../../public/images/background-home.png");
+}
+
+.sider {
+    background: none !important;
+}
+
+.header__outside {
+    display: flex;
+    background: inherit;
+}
+
 .image {
     margin-left: 1%;
 }
 
-.layout {
-    height: -webkit-fill-available;
+.space {
+    align-items: flex-start;
 }
 
-.header {
+.space__form__list {
     display: flex;
-    background-color: #B67D7C;
 }
 
-.breadcrumb-col {
+.select [class="ant-select-selector"] {
+    font-family: math;
+}
+.text {
+    font-family: "winter-house";
+    font-size: smaller;
+}
+
+.text__button {
+    font-family: "winter-house";
+    font-size: small;
+}
+
+.text--secondary {
+    font-family: inherit;
+}
+
+.submit__button {
+    background-color: cornflowerblue;
+    font-family: math;
+}
+
+.icon {
     display: flex;
-    align-items: center;
-    column-gap: 8px;
 }
 
-.content {
-    padding: 4%;
+.modal__button--secondary,
+.modal__button--first,
+._item__button {
+    display: inline-block;
+    width: 85px;
+    background-color: cornflowerblue;
 }
 
-.breadcrumb {
-    margin-bottom: 1%;
+.___Item__location div {
+    padding-top: 0 !important;
 }
 
-.inside-content {
-    background-color: white;
+.cascader {
+    width: auto !important;
+}
+
+.modal {
+    width: 400px !important;
+}
+
+.modal__button--secondary {
+    background-color: darkgrey;
+}
+
+.___Item--first {
+    max-width: 50%;
+}
+
+.___Item--secondary {
+    max-width: 25%;
+    margin-bottom: 0px;
+}
+
+.___Item--third {
+    margin-bottom: 0px;
+}
+
+.upload-list-inline .ant-upload-list-item {
+    float: left;
+    width: 200px;
+    margin-inline-end: 8px;
+  }
+
+@font-face {
+    font-family: "winter-house";
+    src: url("../../public/fonts/KingsAndPirates-p7EAK.ttf") format("truetype");
 }

@@ -26,7 +26,7 @@ public class UserController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    @PostMapping("/users")
+    @PostMapping("/createUser")
     public ResponseEntity<Void> createUser(@RequestBody User user) {
         boolean userExists = userService.checkUser(user.getUsername(), user.getEmail());
         if (!userExists) 
@@ -53,7 +53,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/secret-key")
+    @GetMapping("/getSecretKey")
     public ResponseEntity<String> getSecretKey() throws NoSuchAlgorithmException {
         String secretKey = jwtUtils.generateSecretKey();
         return ResponseEntity.ok(secretKey);

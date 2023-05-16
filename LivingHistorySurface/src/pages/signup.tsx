@@ -1,148 +1,162 @@
-import { useState, useCallback, useMemo } from "react";
-import { Button, Card, Checkbox, Form, Input, Layout, Modal, Select, message, Divider } from "antd";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/router";
+import { Button, Card, Checkbox, Form, Input, Layout, Modal, Select, message, Divider, Typography } from "antd";
+import { LoginOutlined } from "@ant-design/icons";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { _Item, _Password } from "@/components/styled";
 import { RegisterFormData } from "../modals/types";
 import { formItemLayout, tailFormItemLayout } from "../styles/component-props";
-import { useRouter } from "next/router";
 import styles from "../styles/signup.module.css";
-import Header from "@/components/header";
-import Footer from "@/components/footer"
-import { LoginOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Option } = Select;
 
-const Signup: React.FC = () => {
+const Signup = () => {
     const router = useRouter();
-    const [form] = Form.useForm();
-    const [data, setData] = useState<RegisterFormData>();
-    const [modalVisible, setModalVisible] = useState<boolean>(false);
+
     const [messageApi, contextHolder] = message.useMessage();
-    const [checkboxDisabled, setCheckboxDisabled] = useState<boolean>(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [checkboxDisabled, setCheckboxDisabled] = useState(false);
+    const [termsAndConditions, setTermsAndConditions] = useState("");
 
-    useMemo(() => data, [data]);
+    const [form] = Form.useForm();
 
-    const onClick = useCallback(async () => {
+    useEffect(() => {
+        const fetchTermsAndConditions = async () => {
+            try {
+                const response = await fetch("/texts/terms-and-conditions.txt");
+                if (response.ok) {
+                    const text = await response.text();
+                    setTermsAndConditions(text);
+                } else {
+                    messageApi.error({
+                        content: "Failed to fetch Terms and Conditions.",
+                    });
+                }
+            } catch (error) {
+                messageApi.error({
+                    content: "Failed to fetch Terms and Conditions.",
+                });
+            }
+        };
+        fetchTermsAndConditions();
+    }, [messageApi]);
+
+    const handleSubmit = useCallback(
+        async (values: RegisterFormData) => {
+            try {
+                messageApi.loading({ content: "Please wait a moment.", duration: 1 });
+                const response = await fetch("http://localhost:8080/api/createUser", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(values),
+                });
+                if (response.ok) {
+                    setTimeout(() => {
+                        messageApi.success({
+                            content: "Congratulations! Your request has been fulfilled.",
+                        });
+                    }, 1000);
+                    setTimeout(() => {
+                        messageApi.info({
+                            content: "You are being redirected to the login page.",
+                        });
+                    }, 2000);
+                    setTimeout(async () => {
+                        await router.push(`/login?value=${values.username}`);
+                    }, 3000);
+                } else if (response.status === 400) {
+                    setTimeout(() => {
+                        messageApi.error({
+                            content:
+                                "A duplicate account with this username and email address cannot exist.",
+                        });
+                    }, 1000);
+                } else if (response.status === 500) {
+                    setTimeout(() => {
+                        messageApi.error({
+                            content:
+                                "We are experiencing technical difficulties. Please check back later.",
+                        });
+                    }, 1000);
+                }
+            } catch (error) {
+                setTimeout(() => {
+                    messageApi.error({
+                        content:
+                            "Unfortunately, this task cannot be completed at this time. Please try again later.",
+                    });
+                }, 1000);
+            }
+        },
+        [messageApi, router]
+    );
+
+    const handleLoginClick = useCallback(async () => {
         await router.push("/login");
     }, [router]);
 
-    const fetchData = useCallback(async (data: RegisterFormData) => {
-        try {
-            messageApi.open({
-                key: "signup",
-                type: "loading",
-                content: "Hold thee a moment, fair soul...",
-                duration: 1
-            });
-            const response = await fetch("http://localhost:8080/api/users", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-            if (response.ok) {
-                messageApi.success({
-                    key: "signup",
-                    content: "Rejoice, fair traveler, for thou hast attained the boon thou sought!",
-                    duration: 2
-                }, 1000);
-                setTimeout(() => {
-                    messageApi.info({
-                        key: "signup",
-                        content: "You are being redirected to the login page.",
-                        duration: 1
-                    });
-                }, 2000);
-                setTimeout(async () => {
-                    await router.push(`/login?value=${data?.username}`);
-                }, 3000);
-            }
-            else if (response.status === 400) {
-                messageApi.error({
-                    key: "signup",
-                    content: "A duplicate account with this username-address cannot persist.",
-                    duration: 2
-                });
-            }
-            else if (response.status === 500) {
-                messageApi.error({
-                    key: "signup",
-                    content: "'Til the servers are up and the problem is gone.",
-                    duration: 2
-                });
-            }
-        } catch (error) {
-            messageApi.error({
-                key: "signup",
-                content: "Unhappily, try once more anon, at a later hour this task be done.",
-                duration: 2
-            });
-        }
-    }, [router, messageApi]);
-
-    const onFinish = useCallback(async (values: RegisterFormData) => {
-        const formData: RegisterFormData = {
-            email: values.email,
-            password: values.password,
-            username: values.username,
-            nickname: values.nickname,
-            gender: values.gender
-        };
-        setData(formData);
-        await fetchData(formData);
-    }, [fetchData, setData]);
-
     return (
-        <Layout className={styles["layout"]}>
+        <Layout
+            className={styles["layout"]}>
             {contextHolder}
             <Header />
-            <Content className={styles["content"]}>
+            <Content
+                className={styles["content"]}>
                 <Card
                     bodyStyle={{ paddingBlockEnd: "0px" }}>
-                    <Form className={styles["form"]}
-                        {...formItemLayout}
+                    <Form
+                        className={styles["form"]}
                         form={form}
                         name="register"
-                        onFinish={onFinish}
-                        initialValues={{ prefix: "90" }}
-                        style={{ maxWidth: 600 }}
-                        scrollToFirstError>
-                        <_Item className={styles["_item"]}
+                        onFinish={handleSubmit}
+                        {...formItemLayout}
+                    >
+                        <_Item
+                            className={styles["_item"]}
                             name="email"
                             label="E-mail"
-                            rules={[{
-                                type: "email",
-                                message: "Do not jest, for this is not an electronic letter!"
-                            },
-                            {
-                                required: true,
-                                message: "We must know where to send our messages, so prithee, inform us."
-                            }]}>
+                            rules={[
+                                {
+                                    type: "email",
+                                    message: "You must provide a valid email address.",
+                                },
+                                {
+                                    required: true,
+                                    message: "You must provide an email address.",
+                                },
+                            ]}
+                        >
                             <Input />
                         </_Item>
-                        <_Item className={styles["_item"]}
+                        <_Item
+                            className={styles["_item"]}
                             name="password"
                             label="Password"
                             rules={[
                                 {
                                     required: true,
-                                    message: "I shall not reveal thy secret to anyone... mayhaps."
-                                }
+                                    message: "You must provide a password.",
+                                },
                             ]}
-                            hasFeedback>
+                            hasFeedback={true}
+                        >
                             <_Password />
                         </_Item>
-                        <_Item className={styles["_item"]}
+                        <_Item
+                            className={styles["_item"]}
                             {...formItemLayout}
                             name="confirm"
                             label="Confirm Password"
                             dependencies={["password"]}
-                            hasFeedback
+                            hasFeedback={true}
                             rules={[
                                 {
                                     required: true,
-                                    message: "Equality is the crux of this matter."
+                                    message: "You must confirm your password.",
                                 },
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
@@ -150,113 +164,153 @@ const Signup: React.FC = () => {
                                             return Promise.resolve();
                                         }
                                         return Promise.reject(
-                                            new Error("Equality is the crux of this matter.")
+                                            new Error("The passwords do not match.")
                                         );
-                                    }
-                                })
-                            ]}>
+                                    },
+                                }),
+                            ]}
+                        >
                             <_Password />
                         </_Item>
-                        <_Item className={styles["_item"]}
+                        <_Item
+                            className={styles["_item"]}
                             name="username"
                             label="Username"
-                            rules={[{
-                                required: true,
-                                message: "Every soul hath a name, and deserves to be called by it.",
-                                whitespace: true
-                            }]}>
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "You must provide a username.",
+                                    whitespace: true,
+                                },
+                            ]}
+                        >
                             <Input />
                         </_Item>
-                        <_Item className={styles["_item"]}
+                        <_Item
+                            className={styles["_item"]}
                             name="nickname"
                             label="Nickname"
-                            tooltip="Thus shall others perceive thee, as portrayed herein."
-                            rules={[{
-                                required: true,
-                                message: "Disclose thy true identity, that we may know thee better!",
-                                whitespace: true
-                            }]}>
+                            tooltip="This is how you shall be perceived."
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "You must provide a nickname.",
+                                    whitespace: true,
+                                },
+                            ]}
+                        >
                             <Input />
                         </_Item>
                         <Form.Item
-                            name="gender" label="Gender">
+                            name="gender"
+                            label="Gender">
                             <Select
                                 placeholder="Human">
-                                <Option value="Male">{"Male"}</Option>
-                                <Option value="Female">{"Female"}</Option>
-                                <Option value="Other">{"Other"}</Option>
+                                <Option
+                                    value="Male">
+                                    {"Male"}
+                                </Option>
+                                <Option
+                                    value="Female">
+                                    {"Female"}
+                                </Option>
+                                <Option
+                                    value="Other">
+                                    {"Other"}
+                                </Option>
                             </Select>
                         </Form.Item>
-                        <_Item className={styles["_item-no-margin"]}
-                            {...tailFormItemLayout}>
+                        <_Item
+                            className={styles["_item--secondary"]}
+                            {...tailFormItemLayout}
+                        >
                             <Button
                                 type="primary"
                                 htmlType="submit"
-                                className={styles["form-button"]}
-                                block>
+                                className={styles["_item__button"]}
+                                block
+                            >
                                 {"Submit"}
                             </Button>
                         </_Item>
-                        <_Item className={styles["_item-no-margin"]}
+                        <_Item
+                            className={styles["_item--secondary"]}
                             name="agreement"
                             valuePropName="checked"
                             initialValue={false}
-                            rules={[{
-                                validator: (_, value) => value
-                                    ? Promise.resolve()
-                                    : Promise.reject(new Error("Thou canst not evade this, for it is thine obligation."))
-                            }]}
-                            {...tailFormItemLayout}>
+                            rules={[
+                                {
+                                    validator: (_, value) =>
+                                        value
+                                            ? Promise.resolve()
+                                            : Promise.reject(new Error("You must agree to the Terms and Conditions."))
+                                }
+                            ]}
+                            {...tailFormItemLayout}
+                        >
                             <Checkbox
                                 onChange={(e) => {
                                     form.setFieldValue("agreement", e.target.checked);
                                 }}
-                                disabled={checkboxDisabled}>
-                                {"I agree to the"}
+                                disabled={checkboxDisabled}
+                            >
+                                {"I agree to the "}
                             </Checkbox>
-                            <Button className={styles["button"]}
-                                type={"link"}
-                                onClick={() => setModalVisible(true)}>
+                            <Button
+                                className={styles["button"]}
+                                type="link"
+                                onClick={() => setModalVisible(true)}
+                            >
                                 {"Terms and Conditions"}
                             </Button>
                         </_Item>
                         <Form.Item
                             {...tailFormItemLayout}>
-                            <Divider className={styles["divider"]}/>
-                            <Button className={styles["login-button"]}
+                            <Divider
+                                className={styles["divider"]} />
+                            <Button
+                                className={styles["form__item__button"]}
                                 type="default"
-                                onClick={onClick}>
-                                {"Log in now!"}
+                                onClick={handleLoginClick}
+                            >
+                                {"Already a member?"}
                                 <LoginOutlined />
                             </Button>
                         </Form.Item>
                         <Modal
                             title="Terms and Conditions"
                             open={modalVisible}
-                            bodyStyle={{ fontFamily: "sans-serif" }}
+                            bodyStyle={{
+                                fontFamily: "sans-serif",
+                                whiteSpace: "pre-line"
+                            }}
                             closable={false}
                             footer={[
                                 <>
                                     <Button
-                                        className={styles["model-button-accept"]}
-                                        type={"primary"}
+                                        className={styles["modal__button--first"]}
+                                        type="primary"
                                         onClick={() => {
                                             setModalVisible(false);
                                             setCheckboxDisabled(false);
-                                        }}>
-                                        {"Accept"}
+                                        }}
+                                    >
+                                        {"Agree"}
                                     </Button>
                                     <Button
-                                        className={styles["model-button-decline"]}
-                                        type={"primary"}
+                                        className={styles["modal__button--secondary"]}
+                                        type="primary"
                                         onClick={() => {
                                             setModalVisible(false);
                                             setCheckboxDisabled(true);
-                                        }}>
-                                        {"Decline"}
+                                        }}
+                                    >
+                                        {"Disagree"}
                                     </Button>
-                                </>]}>
-                            {"Verily, by submitting this form, thou dost accept the sacrifice of thine unborn child to the devil. May God forbid thy sin and cleanse thy soul, for such a pact with the infernal powers canst bring naught but damnation upon thee."}
+                                </>
+                            ]}
+                        >
+                            {termsAndConditions}
                         </Modal>
                     </Form>
                 </Card>
@@ -267,7 +321,3 @@ const Signup: React.FC = () => {
 };
 
 export default Signup;
-
-function async(): any {
-    throw new Error("Function not implemented.");
-}
