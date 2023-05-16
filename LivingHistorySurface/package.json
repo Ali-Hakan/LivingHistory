@@ -15,11 +15,15 @@
     "@types/react": "18.0.37",
     "@types/react-dom": "18.0.11",
     "antd": "^5.4.2",
+    "antd-img-crop": "^4.12.2",
     "autoprefixer": "10.4.14",
+    "axios": "^1.4.0",
     "babel-preset-next": "^1.4.0",
     "dotenv": "^16.0.3",
     "eslint": "8.38.0",
     "eslint-config-next": "13.3.0",
+    "moment": "^2.29.4",
+    "nanoid": "^4.0.2",
     "next": "13.3.0",
     "postcss": "8.4.22",
     "react": "18.2.0",
@@ -28,11 +32,13 @@
     "react-quill": "^2.0.0",
     "styled-components": "^5.3.9",
     "tailwindcss": "3.3.1",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/googlemaps": "^3.43.3",
     "@types/styled-components": "^5.1.26",
+    "@types/uuid": "^9.0.1",
     "babel-plugin-styled-components": "^2.1.1",
     "raw-loader": "^4.0.2"
   }

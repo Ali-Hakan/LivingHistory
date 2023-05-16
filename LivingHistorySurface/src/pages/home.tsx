@@ -1,12 +1,14 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, SetStateAction, useRef } from "react";
 import dynamic from "next/dynamic";
-import { Avatar, Breadcrumb, Button, Cascader, Col, DatePicker, Form, Input, InputNumber, Layout, Menu, MenuProps, Modal, Row, Select, Space, Typography } from "antd";
-import { HighlightOutlined, HomeOutlined, HourglassOutlined, MinusCircleOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
-import { GoogleMap, LoadScript } from "@react-google-maps/api";
+import { Button, Col, DatePicker, Form, Input, Layout, Menu, MenuProps, Modal, Row, Select, Space, Typography, message } from "antd";
+import { EnvironmentOutlined, HighlightOutlined, MinusCircleOutlined, SaveOutlined } from "@ant-design/icons";
 import Image from "next/image";
-import { __Item, ___Item } from "@/components/styled";
+import { useRouter } from "next/router";
+import { Marker, Autocomplete } from "@react-google-maps/api";
+import { _Cascader, __Item, ___Item } from "@/components/styled";
 import "react-quill/dist/quill.snow.css";
 import styles from "../styles/home.module.css";
+import axios from "axios";
 
 const { Header, Content, Sider } = Layout;
 const { Text } = Typography;
@@ -14,29 +16,25 @@ const { RangePicker } = DatePicker;
 
 type MenuItem = Required<MenuProps>["items"][number];
 
-interface DateType {
-    key: string;
-    date: string;
+interface DateOption {
+    value: string | number;
+    label: string;
+    children?: DateOption[];
+}
+
+interface Location {
+    name: string;
+    lat: number;
+    lng: number;
 }
 
 const items: MenuItem[] = [
     {
         key: "1",
         icon: <HighlightOutlined />,
-        label: "Create Memory",
+        label: "Create Story",
     },
 ];
-
-const navigation: MenuProps["items"] = [
-    { key: "1", icon: <HighlightOutlined />, label: "Post" },
-    { key: "2", icon: <HighlightOutlined />, label: "Images & Video" },
-    { key: "3", icon: <HighlightOutlined />, label: "Location" },
-];
-
-const containerStyle = {
-    width: "100%",
-    height: "100%",
-};
 
 const toolbarOptions = [
     [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -51,118 +49,201 @@ const toolbarOptions = [
     ["clean"],
 ];
 
+const mapContainerStyle = {
+    width: "100%",
+    height: "400px",
+};
+
+const dateOptions: DateOption[] = [
+    {
+        label: "Precise",
+        value: "precise",
+        children: [
+            { label: "Date", value: "date" },
+            { label: "Week", value: "week" },
+            { label: "Month", value: "month" },
+            { label: "Quarter", value: "quarter" },
+            { label: "Year", value: "year" }
+        ]
+    },
+    {
+        label: "Interval",
+        value: "interval",
+        children: [
+            { label: "Date", value: "date" },
+            { label: "Week", value: "week" },
+            { label: "Month", value: "month" },
+            { label: "Quarter", value: "quarter" },
+            { label: "Year", value: "year" }
+        ]
+    }
+];
+
 const Home: React.FunctionComponent = () => {
-    const [form] = Form.useForm();
-    const [formDate] = Form.useForm();
+    const [formStory] = Form.useForm();
+    const [formModal] = Form.useForm();
     const [selectedKeys, setSelectedKeys] = useState<string[]>(["1"]);
     const [openKeys, setOpenKeys] = useState<string[]>(["1"]);
     const [quillValue, setQuillValue] = useState<string>("");
-    const [open, setOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState("date");
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+    const [cascaderValue, setCascaderValue] = useState<any[]>(["precise", "date"]);
+    const [datePickerValue, setDatePickerValue] = useState<any>();
+    const [current, setCurrent] = useState<string>("1");
+    const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 41.0856396, lng: 29.0424937 });
+    const [locations, setLocations] = useState<Location[]>([]);
+    const [messageApi, contextHolder] = message.useMessage();
 
-    useEffect(() => {
-        require("react-quill/dist/quill.snow.css");
-    }, []);
+    const router = useRouter();
+
+    const handleFormSubmit = () => {
+        formStory.submit();
+    };
+
+    const navigation: MenuProps["items"] = [
+        { key: "1", icon: <HighlightOutlined />, label: "Post" },
+        { key: "2", icon: <EnvironmentOutlined />, label: "Location" },
+        {
+            key: "3", icon:
+                <Row>
+                    <Button
+                        style={{ alignItems: "center", display: "flex" }}
+                        className={styles["submit__button"]}
+                        type="primary"
+                        icon={<SaveOutlined />}
+                        onClick={handleFormSubmit}>
+                        <Text>
+                            {"Submit"}
+                        </Text>
+                    </Button>
+                </Row>,
+            disabled: true
+        }
+    ];
 
     const ReactQuill = useMemo(
         () => dynamic(() => import("react-quill"), { ssr: false }),
         []
     );
 
-    const getItem = ({
-        label,
-        key,
-        icon,
-        children,
-        type,
-    }: {
-        label: React.ReactNode;
-        key: React.Key;
-        icon?: React.ReactNode;
-        children?: MenuItem[];
-        type?: "group";
-    }): MenuItem => ({
-        key,
-        icon,
-        children,
-        label,
-        type,
+    const GoogleMap = dynamic(() => import("@react-google-maps/api").then((module) => module.GoogleMap), {
+        ssr: false,
     });
 
-    const onFinish = (values: any): void => {
-        throw new Error("Function not implemented.");
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            router.push("/login");
+        }
+        require("react-quill/dist/quill.snow.css");
+    }, []);
+
+    useEffect(() => {
+        formStory.setFieldValue("location", locations);
+    }, [locations, formModal]);
+
+    const handleStoryFinish = (): void => {
+        messageApi.loading({ content: "Please wait a moment." });
+        const formData = formStory.getFieldsValue();
+        axios
+            .post("http://localhost:8080/api/createStory", formData)
+            .then((response) => {
+                console.log("Story created successfully:", response.data);
+            })
+            .catch((error) => {
+                console.error("Error creating story:", error);
+            });
     };
 
-    const onFinishDate = (values: any) => {
-        console.log("Finish:", values);
+    const handleModalButton = (): void => {
+        setModalOpen(true);
     };
 
-    const handleQuillChange = useCallback(
-        (value: React.SetStateAction<string>) => {
+    const handleModalButtonOk = (): void => {
+        formModal.submit();
+        if (datePickerValue === undefined || datePickerValue[0] === null)
+            return;
+        setModalOpen(false);
+    };
+
+    const handleModalButtonCancel = (): void => {
+        setModalOpen(false);
+    };
+
+    const handleQuill = useCallback(
+        (value: SetStateAction<string>) => {
             setQuillValue(value);
         },
         []
     );
 
-    const showUserModal = () => {
-        setOpen(true);
-    };
-
-    const hideUserModal = () => {
-        setOpen(false);
-    };
-
-    const onOk = () => {
-        formDate.submit();
-    };
-
-    const handleCascaderChange = (value: any, selectedOptions: string | any[]) => {
-        const lastSelectedOption = selectedOptions[selectedOptions.length - 1];
-        setSelectedValue(lastSelectedOption.value);
-    };
-
-    const options = [
-        {
-            label: "Precise",
-            value: "precise",
-            children: [
-                { label: "Date", value: "date" },
-                { label: "Week", value: "week" },
-                { label: "Month", value: "month" },
-                { label: "Quarter", value: "quarter" },
-                { label: "Year", value: "year" },
-            ],
+    const handleCascader = useCallback(
+        (value: SetStateAction<any[]>) => {
+            setCascaderValue(value);
+            formModal.setFieldValue("class", value);
         },
-        {
-            label: "Interval",
-            value: "interval",
-            children: [
-                { label: "Date", value: "idate" },
-                { label: "Week", value: "iweek" },
-                { label: "Month", value: "imonth" },
-                { label: "Quarter", value: "iquarter" },
-                { label: "Year", value: "iyear" },
-            ],
-        },
-    ];
-
-    const breadcrumbTitle = (
-        <Col className={styles["breadcrumb-col"]}>
-            <HomeOutlined />
-            <Text>{"Home"}</Text>
-        </Col>
+        []
     );
 
+    const handleDatePicker = useCallback(
+        (date: any, string: any) => {
+            setDatePickerValue([date, string]);
+            formModal.setFieldValue("value", [date, string]);
+        },
+        []
+    );
+
+    const handleInsideMenu: MenuProps["onClick"] = (e) => {
+        setCurrent(e.key);
+    };
+
+    const AutoComplete = useRef<google.maps.places.Autocomplete | null>(null);
+
+    const handleLocationSelect = () => {
+        const place = AutoComplete.current?.getPlace();
+        if (place?.geometry?.location) {
+            const locationData: Location = {
+                name: place.name || "",
+                lat: Number(place.geometry?.location?.lat().toFixed(6)),
+                lng: Number(place.geometry?.location?.lng().toFixed(6)),
+            };
+
+            setLocations([...locations, locationData]);
+            console.log(locationData)
+            setMapCenter({ lat: locationData.lat, lng: locationData.lng });
+        }
+    };
+
+    const handleMapClick = async (e: google.maps.MapMouseEvent) => {
+        const { latLng } = e;
+        const lat = latLng?.lat();
+        const lng = latLng?.lng();
+        const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.GOOGLE_MAPS_API_KEY}`
+        );
+        const data = await response.json();
+        const { results } = data;
+        if (results.length > 0) {
+            const locationData: Location = {
+                name: results[0].formatted_address,
+                lat: Number(lat?.toFixed(6)),
+                lng: Number(lng?.toFixed(6)),
+            };
+            setLocations([...locations, locationData]);
+            setMapCenter({ lat: locationData.lat, lng: locationData.lng });
+        }
+    };
+
     return (
-        <Layout className={styles["layout-outside"]}>
-            <Header className={styles["header-outside"]}>
+        <Layout className={styles["layout__outside"]}>
+            {contextHolder}
+            <Header className={styles["header__outside"]}>
                 <Row justify="space-between" align="middle">
                     <Col>
                         <Image
                             src={"/images/living-history.png"}
                             alt={"Gothicha"}
-                            width={350}
-                            height={350}
+                            width={380}
+                            height={380}
                             quality={100}
                             loading="eager"
                             priority
@@ -170,14 +251,11 @@ const Home: React.FunctionComponent = () => {
                     </Col>
                 </Row>
             </Header>
-            <Content className={styles["content-outside"]}>
-                <Breadcrumb
-                    className={styles["breadcrumb"]}
-                    items={[{ href: "/home", title: breadcrumbTitle }]}
-                />
-                <Layout className={styles["layout-inside"]}>
+            <Content className={styles["content__outside"]}>
+                <Layout className={styles["layout__inside"]}>
                     <Sider className={styles["sider"]}>
-                        <Menu className={styles["menu"]}
+                        <Menu
+                            className={styles["menu"]}
                             mode="inline"
                             selectedKeys={selectedKeys}
                             openKeys={openKeys}
@@ -186,160 +264,227 @@ const Home: React.FunctionComponent = () => {
                             items={items}
                         />
                     </Sider>
-                    <Layout className={styles["layout-inside"]}>
-                        <Header className={styles["header-inside"]}>
-                            <Menu className={styles["menu"]}
+                    <Layout className={styles["layout__inside"]}>
+                        <Header className={styles["header__inside"]}>
+                            <Menu
+                                className={styles["menu"]}
                                 mode="horizontal"
                                 defaultSelectedKeys={["1"]}
                                 items={navigation}
+                                onClick={handleInsideMenu}
+                                selectedKeys={[current]}
                             />
                         </Header>
-                        <Content className={styles["content-inside"]}>
-                            <Form className={styles["form"]}
-                                form={form}
-                                name="story"
-                                onFinish={onFinish}
-                                style={{ maxWidth: "inherit" }}
-                                autoComplete="off"
-                                layout="vertical"
-                            >
-                                <Row>
-                                    <Col span={11}>
-                                        <__Item
-                                            name="title"
-                                            label="Title">
-                                            <Input />
-                                        </__Item>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col>
-                                        <__Item
-                                            name="quill"
-                                            label="Story">
-                                            <ReactQuill
-                                                value={quillValue}
-                                                onChange={handleQuillChange}
-                                                modules={{
-                                                    toolbar: toolbarOptions
-                                                }}
-                                            />
-                                        </__Item>
-                                    </Col>
-                                </Row>
-                            </Form>
+                        <Content className={styles["content__inside"]}>
                             <Form.Provider
                                 onFormFinish={(name, { values, forms }) => {
-                                    if (name === "modal-form") {
-                                        const dateForm = forms["date-form"];
-                                        const dates = dateForm.getFieldValue("dates") || [];
-                                        dateForm.setFieldsValue({ dates: [...dates, values.dates] });
-                                        setOpen(false);
+                                    if (name === "modal") {
+                                        const { main } = forms;
+                                        const date = main.getFieldValue("date") || [];
+                                        main.setFieldValue("date", [...date, values]);
                                     }
                                 }}
                             >
-                                <Form className={styles["form-date"]} name="main-form" onFinish={onFinishDate} style={{ maxWidth: 600 }}>
-                                    <__Item
-                                        label="Date"
-                                        shouldUpdate={(prevValues: any, curValues: any) => prevValues.users !== curValues.users}
-                                    >
-                                        {({ getFieldValue }) => {
-                                            const dates: DateType[] = getFieldValue("dates") || [];
-                                            return dates.length ? (
-                                                <ul>
-                                                    {dates.map((date) => (
-                                                        <li key={date.key} className="date">
-                                                            <Avatar icon={<UserOutlined />} />
-                                                            {date.date}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            ) : (
-                                                <Typography.Text className={styles["typography"]} type="secondary">
-                                                    <HourglassOutlined />{"No date yet."}
-                                                </Typography.Text>
-                                            );
-                                        }}
-                                    </__Item>
-                                    <Form.Item>
-                                        <Button className={styles["button-modal"]} htmlType="button" onClick={showUserModal}>
-                                            {"Add Date"}
-                                        </Button>
-                                    </Form.Item>
-                                </Form>
-                                <Modal title="Date Selection" open={open} onOk={onOk} onCancel={hideUserModal} style={{ fontFamily: "winter-house" }}>
-                                    <Form form={formDate} layout="vertical" name="modal-form">
-                                        <___Item name="name" label="Date Class" rules={[{ required: true }]}>
-                                            <Cascader
-                                                defaultValue={["precise", "date"]}
-                                                options={options}
-                                                onChange={handleCascaderChange}
-                                                placeholder="Please select"
-                                                style={{ width: 200 }}
-                                            />
-                                        </___Item>
-                                        <Form.List name="dates">
-                                            {(fields, { add, remove }) => {
-                                                const counter = fields.length;
-                                                return (
-                                                    <>
-                                                        {fields.map(({ key, name, ...restField }, index) => {
-                                                            const dateType =
-                                                                index >= counter
-                                                                    ? selectedValue
-                                                                    : formDate.getFieldValue(["dates", index, "dateType"]);
-                                                            return (
-                                                                <Space
-                                                                    key={key}
-                                                                    style={{ display: "flex", marginBottom: 8 }}
-                                                                    align="baseline"
-                                                                >
-                                                                    <___Item
-                                                                        {...restField}
-                                                                        name={name}
-                                                                        rules={[{ required: true, message: "Date must be provided." }]}
-                                                                    >
-                                                                        {dateType === "date" && <DatePicker />}
-                                                                        {dateType === "week" && <DatePicker picker="week" />}
-                                                                        {dateType === "month" && <DatePicker picker="month" />}
-                                                                        {dateType === "quarter" && <DatePicker picker="quarter" />}
-                                                                        {dateType === "year" && <DatePicker picker="year" />}
-                                                                        {dateType === "idate" && <RangePicker picker="date" />}
-                                                                        {dateType === "iweek" && <RangePicker picker="week" />}
-                                                                        {dateType === "imonth" && <RangePicker picker="month" />}
-                                                                        {dateType === "iquarter" && <RangePicker picker="quarter" />}
-                                                                        {dateType === "iyear" && <RangePicker picker="year" />}
-                                                                    </___Item>
-                                                                    <MinusCircleOutlined onClick={() => remove(name)} />
+                                <Form
+                                    className={styles["form"]}
+                                    form={formStory}
+                                    name="main"
+                                    onFinish={handleStoryFinish}
+                                    autoComplete="off"
+                                    layout="vertical"
+                                >
+                                    {current == "1" ? (
+                                        <>
+                                            <__Item className={styles["___Item--first"]} name="title" label="Title">
+                                                <Input />
+                                            </__Item>
+                                            <__Item name="story" label="Story">
+                                                <ReactQuill
+                                                    value={quillValue}
+                                                    onChange={handleQuill}
+                                                    modules={{
+                                                        toolbar: toolbarOptions
+                                                    }}
+                                                />
+                                            </__Item>
+                                            <___Item className={styles["___Item--secondary"]} name="tag" label="Tag">
+                                                <Select
+                                                    className={styles["select"]}
+                                                    mode="tags"
+                                                    placeholder="NO TAG YET"
+                                                    notFoundContent={false}
+                                                />
+                                            </___Item>
+                                            <___Item
+                                                style={{ marginBottom: "12px" }}
+                                                label="Date"
+                                                shouldUpdate={(prevValues: any, curValues: any) => prevValues.date !== curValues.date}
+                                            >
+                                                {({ getFieldValue }) => {
+                                                    const dates: any[] = getFieldValue("date") || [];
+                                                    const handleDeleteDate = (dateIndex: number) => {
+                                                        const dateRenewed = [...dates];
+                                                        dateRenewed.splice(dateIndex, 1);
+                                                        formStory.setFieldsValue({ date: dateRenewed });
+                                                    };
+                                                    return dates.length ? (
+                                                        <Space direction="vertical">
+                                                            {dates.map((date, index) => (
+                                                                <Space>
+                                                                    <MinusCircleOutlined
+                                                                        className={styles["icon"]}
+                                                                        onClick={() => handleDeleteDate(index)}
+                                                                    />
+                                                                    <Text className={styles["text--secondary"]} key={date.value[1]}>
+                                                                        {Array.isArray(date.value[1])
+                                                                            ? date.value[1][0] + " & " + date.value[1][1]
+                                                                            : date.value[1]}
+                                                                    </Text>
                                                                 </Space>
-                                                            );
-                                                        })}
-                                                        <Form.Item>
-                                                            <Button className={styles["button-modal-add-date"]}
-                                                                type="dashed"
-                                                                onClick={() => {
-                                                                    add({ dateType: selectedValue });
-                                                                }}
-                                                                block
-                                                                icon={<PlusOutlined />}
-                                                            >
-                                                                {"Add date field"}
-                                                            </Button>
-                                                        </Form.Item>
-                                                    </>
-                                                );
-                                            }}
-                                        </Form.List>
+                                                            ))}
+                                                        </Space>
+                                                    ) : (
+                                                        <Text className={styles["text"]} type="secondary">
+                                                            {"No date yet."}
+                                                        </Text>
+                                                    );
+                                                }}
+                                            </___Item>
+                                            <___Item className={styles["___Item--secondary"]}>
+                                                <Button onClick={handleModalButton}>
+                                                    <Text className={styles["text__button"]}>{"Add date"}</Text>
+                                                </Button>
+                                            </___Item>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <___Item
+                                                className={styles["___Item__location"]}
+                                                label="Location">
+                                                <Space size="middle" direction="vertical">
+                                                    <Autocomplete
+                                                        onLoad={(autocomplete) => {
+                                                            AutoComplete.current = autocomplete;
+                                                        }}
+                                                        onPlaceChanged={handleLocationSelect}>
+                                                        <Input style={{ fontFamily: "math" }}
+                                                            placeholder="Enter a location" />
+                                                    </Autocomplete>
+                                                    {locations.map((loc, index) => (
+                                                        <Space key={index}>
+                                                            <Text>{loc.name || `${loc.lat}, ${loc.lng}`}</Text>
+                                                            <Button className={styles["modal__button--first"]} type="primary" onClick={() => setLocations(locations.filter((_, i) => i !== index))}>{"Remove"}</Button>
+                                                        </Space>
+                                                    ))}
+                                                </Space>
+                                            </___Item>
+                                            <___Item>
+                                                <GoogleMap
+                                                    mapContainerStyle={mapContainerStyle}
+                                                    center={mapCenter}
+                                                    zoom={15}
+                                                    onClick={handleMapClick}
+                                                >
+                                                    {locations.map((loc, index) => (
+                                                        <Marker key={index} position={{ lat: loc.lat, lng: loc.lng }} />
+                                                    ))}
+                                                </GoogleMap>
+                                            </___Item>
+                                            <Form.Item noStyle name="location" />
+                                        </>
+                                    )}
+                                    <Form.Item noStyle name="date" />
+                                </Form>
+                                <Modal
+                                    className={styles["modal"]}
+                                    onOk={handleModalButtonOk}
+                                    onCancel={handleModalButtonCancel}
+                                    open={modalOpen}
+                                    closable={false}
+                                    footer={[
+                                        <Layout className={styles["layout__modal"]}>
+                                            <Button
+                                                className={styles["modal__button--first"]}
+                                                type="primary"
+                                                onClick={handleModalButtonOk}
+                                            >
+                                                {"Done"}
+                                            </Button>
+                                            <Button
+                                                className={styles["modal__button--secondary"]}
+                                                type="primary"
+                                                onClick={handleModalButtonCancel}
+                                            >
+                                                {"Cancel"}
+                                            </Button>
+                                        </Layout>
+                                    ]}
+                                >
+                                    <Form
+                                        className={styles["form"]}
+                                        form={formModal}
+                                        initialValues={{ class: ["precise", "date"] }}
+                                        name="modal"
+                                        autoComplete="off"
+                                        layout="vertical"
+                                    >
+                                        <___Item name={"class"} label={"Date Class"}>
+                                            <Row>
+                                                <Col span={8}>
+                                                    <_Cascader
+                                                        className={styles["cascader"]}
+                                                        options={dateOptions}
+                                                        onChange={handleCascader}
+                                                        defaultValue={["precise", "date"]}
+                                                        expandTrigger="hover"
+                                                    />
+                                                </Col>
+                                            </Row>
+                                        </___Item>
+                                        <___Item
+                                            className={styles["___Item--third"]}
+                                            name="value"
+                                            rules={[
+                                                {
+                                                    required: true,
+                                                    message: "You must provide the date."
+                                                }
+                                            ]}
+                                        >
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "date"]) && (
+                                                <DatePicker onChange={handleDatePicker} />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "week"]) && (
+                                                <DatePicker onChange={handleDatePicker} picker="week" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "month"]) && (
+                                                <DatePicker onChange={handleDatePicker} picker="month" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "quarter"]) && (
+                                                <DatePicker onChange={handleDatePicker} picker="quarter" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "year"]) && (
+                                                <DatePicker onChange={handleDatePicker} picker="year" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "date"]) && (
+                                                <RangePicker onChange={handleDatePicker} picker="date" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "week"]) && (
+                                                <RangePicker onChange={handleDatePicker} picker="week" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "month"]) && (
+                                                <RangePicker onChange={handleDatePicker} picker="month" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "quarter"]) && (
+                                                <RangePicker onChange={handleDatePicker} picker="quarter" />
+                                            )}
+                                            {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "year"]) && (
+                                                <RangePicker onChange={handleDatePicker} picker="year" />
+                                            )}
+                                        </___Item>
                                     </Form>
                                 </Modal>
                             </Form.Provider>
-                            <LoadScript
-                                googleMapsApiKey={process.env.GOOGLE_MAPS_API_KEY ?? ""}>
-                                <GoogleMap
-                                    mapContainerStyle={containerStyle}
-                                    center={{ lat: 37.7749, lng: -122.4194 }}
-                                    zoom={10} />
-                            </LoadScript>
                         </Content>
                     </Layout>
                 </Layout>

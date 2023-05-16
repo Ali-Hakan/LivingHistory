@@ -11,12 +11,11 @@ import styles from "../styles/signup.module.css";
 
 const { Content } = Layout;
 const { Option } = Select;
-const { Text } = Typography
 
 const Signup = () => {
     const router = useRouter();
 
-    const [messageApi] = message.useMessage();
+    const [messageApi, contextHolder] = message.useMessage();
     const [modalVisible, setModalVisible] = useState(false);
     const [checkboxDisabled, setCheckboxDisabled] = useState(false);
     const [termsAndConditions, setTermsAndConditions] = useState("");
@@ -47,8 +46,8 @@ const Signup = () => {
     const handleSubmit = useCallback(
         async (values: RegisterFormData) => {
             try {
-                messageApi.loading({ content: "Please wait a moment." });
-                const response = await fetch("http://localhost:8080/api/users", {
+                messageApi.loading({ content: "Please wait a moment.", duration: 1 });
+                const response = await fetch("http://localhost:8080/api/createUser", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -56,9 +55,11 @@ const Signup = () => {
                     body: JSON.stringify(values),
                 });
                 if (response.ok) {
-                    messageApi.success({
-                        content: "Congratulations! Your request has been fulfilled.",
-                    });
+                    setTimeout(() => {
+                        messageApi.success({
+                            content: "Congratulations! Your request has been fulfilled.",
+                        });
+                    }, 1000);
                     setTimeout(() => {
                         messageApi.info({
                             content: "You are being redirected to the login page.",
@@ -68,54 +69,51 @@ const Signup = () => {
                         await router.push(`/login?value=${values.username}`);
                     }, 3000);
                 } else if (response.status === 400) {
-                    messageApi.error({
-                        content:
-                            "A duplicate account with this username and email address cannot exist.",
-                    });
+                    setTimeout(() => {
+                        messageApi.error({
+                            content:
+                                "A duplicate account with this username and email address cannot exist.",
+                        });
+                    }, 1000);
                 } else if (response.status === 500) {
-                    messageApi.error({
-                        content:
-                            "We are experiencing technical difficulties. Please check back later.",
-                    });
+                    setTimeout(() => {
+                        messageApi.error({
+                            content:
+                                "We are experiencing technical difficulties. Please check back later.",
+                        });
+                    }, 1000);
                 }
             } catch (error) {
-                messageApi.error({
-                    content:
-                        "Unfortunately, this task cannot be completed at this time. Please try again later.",
-                });
+                setTimeout(() => {
+                    messageApi.error({
+                        content:
+                            "Unfortunately, this task cannot be completed at this time. Please try again later.",
+                    });
+                }, 1000);
             }
         },
         [messageApi, router]
     );
-
-    const handleAgree = useCallback(() => {
-        setModalVisible(false);
-        setCheckboxDisabled(false);
-    }, []);
-
-    const handleDisagree = useCallback(() => {
-        setModalVisible(false);
-        setCheckboxDisabled(true);
-    }, []);
 
     const handleLoginClick = useCallback(async () => {
         await router.push("/login");
     }, [router]);
 
     return (
-        <Layout className={styles["layout"]}>
+        <Layout
+            className={styles["layout"]}>
+            {contextHolder}
             <Header />
-            <Content className={styles["content"]}>
-                <Card bodyStyle={{ paddingBlockEnd: "0px" }}>
+            <Content
+                className={styles["content"]}>
+                <Card
+                    bodyStyle={{ paddingBlockEnd: "0px" }}>
                     <Form
                         className={styles["form"]}
-                        {...formItemLayout}
                         form={form}
                         name="register"
-                        initialValues={{ prefix: "90" }}
                         onFinish={handleSubmit}
-                        style={{ maxWidth: 600 }}
-                        scrollToFirstError
+                        {...formItemLayout}
                     >
                         <_Item
                             className={styles["_item"]}
@@ -144,7 +142,7 @@ const Signup = () => {
                                     message: "You must provide a password.",
                                 },
                             ]}
-                            hasFeedback
+                            hasFeedback={true}
                         >
                             <_Password />
                         </_Item>
@@ -154,7 +152,7 @@ const Signup = () => {
                             name="confirm"
                             label="Confirm Password"
                             dependencies={["password"]}
-                            hasFeedback
+                            hasFeedback={true}
                             rules={[
                                 {
                                     required: true,
@@ -203,11 +201,23 @@ const Signup = () => {
                         >
                             <Input />
                         </_Item>
-                        <Form.Item name="gender" label="Gender">
-                            <Select placeholder="Human">
-                                <Option value="Male">{"Male"}</Option>
-                                <Option value="Female">{"Female"}</Option>
-                                <Option value="Other">{"Other"}</Option>
+                        <Form.Item
+                            name="gender"
+                            label="Gender">
+                            <Select
+                                placeholder="Human">
+                                <Option
+                                    value="Male">
+                                    {"Male"}
+                                </Option>
+                                <Option
+                                    value="Female">
+                                    {"Female"}
+                                </Option>
+                                <Option
+                                    value="Other">
+                                    {"Other"}
+                                </Option>
                             </Select>
                         </Form.Item>
                         <_Item
@@ -233,12 +243,8 @@ const Signup = () => {
                                     validator: (_, value) =>
                                         value
                                             ? Promise.resolve()
-                                            : Promise.reject(
-                                                new Error(
-                                                    "You must agree to the Terms and Conditions."
-                                                )
-                                            ),
-                                },
+                                            : Promise.reject(new Error("You must agree to the Terms and Conditions."))
+                                }
                             ]}
                             {...tailFormItemLayout}
                         >
@@ -258,8 +264,10 @@ const Signup = () => {
                                 {"Terms and Conditions"}
                             </Button>
                         </_Item>
-                        <Form.Item {...tailFormItemLayout}>
-                            <Divider className={styles["divider"]} />
+                        <Form.Item
+                            {...tailFormItemLayout}>
+                            <Divider
+                                className={styles["divider"]} />
                             <Button
                                 className={styles["form__item__button"]}
                                 type="default"
@@ -270,10 +278,11 @@ const Signup = () => {
                             </Button>
                         </Form.Item>
                         <Modal
-                            title="Terms and Conditions" open={modalVisible}
+                            title="Terms and Conditions"
+                            open={modalVisible}
                             bodyStyle={{
                                 fontFamily: "sans-serif",
-                                whiteSpace: "pre-line",
+                                whiteSpace: "pre-line"
                             }}
                             closable={false}
                             footer={[
