@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.LivingHistory.Model.User;
+import com.LivingHistory.Modal.User;
 import com.LivingHistory.Repository.UserRepository;
 
 @Service

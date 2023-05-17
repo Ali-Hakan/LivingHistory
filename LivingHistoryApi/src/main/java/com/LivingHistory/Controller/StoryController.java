@@ -1,12 +1,16 @@
 package com.LivingHistory.Controller;
 
-import com.LivingHistory.Model.Story;
-import com.LivingHistory.Model.User;
+import com.LivingHistory.Exception.JWTTokenExpiration;
+import com.LivingHistory.Modal.Story;
+import com.LivingHistory.Modal.User;
 import com.LivingHistory.Service.StoryService;
 import com.LivingHistory.Service.UserService;
-import com.LivingHistory.Utils.JwtUtils;
+import com.LivingHistory.Utilization.JWT;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +24,7 @@ public class StoryController {
     private UserService userService;
 
     @Autowired
-    private JwtUtils jwtUtils;
+    private JWT jwtUtils;
 
     public StoryController(StoryService storyService, UserService userService) {
         this.storyService = storyService;
@@ -29,12 +33,29 @@ public class StoryController {
 
     @PostMapping("/createStory")
     public ResponseEntity<Story> createStory(@RequestBody Story story, @RequestHeader("Authorization") String token) {
-        String username = jwtUtils.extractUsernameFromJwtToken(token);
+        try {
+            String username = jwtUtils.extractUsernameFromJwtToken(token);
+            User user = userService.findByUsername(username);
 
-        User user = userService.findByUsername(username);
-        story.setUser(user);
-    
-        Story createdStory = storyService.createStory(story);
-        return ResponseEntity.ok(createdStory);
+            if (username == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            }
+
+            if (user != null) {
+                story.setUser(user);
+                Story createdStory = storyService.createStory(story);
+                return ResponseEntity.ok(createdStory);
+            } else {
+                return ResponseEntity.badRequest().body(null);
+            }
+        } catch (JWTTokenExpiration e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
+
+    @GetMapping("/searchStories")
+    public ResponseEntity<List<Story>> searchStories(@RequestParam("query") String query) {
+        List<Story> stories = storyService.searchStories(query);
+        return ResponseEntity.ok(stories);
     }
 }

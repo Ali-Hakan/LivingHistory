@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.LivingHistory.Model.User;
+import com.LivingHistory.Modal.User;
 import com.LivingHistory.Service.UserService;
-import com.LivingHistory.Utils.JwtUtils;
+import com.LivingHistory.Utilization.JWT;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -24,7 +24,7 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private JwtUtils jwtUtils;
+    private JWT jwtUtils;
 
     @PostMapping("/createUser")
     public ResponseEntity<Void> createUser(@RequestBody User user) {
