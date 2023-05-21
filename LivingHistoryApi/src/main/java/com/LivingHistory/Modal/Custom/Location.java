@@ -1,21 +1,30 @@
 package com.LivingHistory.Modal.Custom;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Embeddable
+@Entity
+@Table(name = "location")
 public class Location {
-    private String name;
-    private double lat;
-    private double lng;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public Location(String name, double lat, double lng) {
+    private String name;
+    private double latitude;
+    private double longtitude;
+
+    public Location(String name, double latitude, double longtitude) {
         this.name = name;
-        this.lat = lat;
-        this.lng = lng;
+        this.latitude = latitude;
+        this.longtitude = longtitude;
     }
 
     public Location() {

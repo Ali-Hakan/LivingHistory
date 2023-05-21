@@ -67,6 +67,10 @@
     padding-top: 6%;
 }
 
+.space [class="ant-space-item"] {
+    align-self: center;
+}
+
 .layout__outside {
     height: fit-content;
     min-height: 100vh;
@@ -100,6 +104,11 @@
     font-family: math;
 }
 
+.cascader [class="ant-select-selection-item"],
+.select--second [class="ant-select-selector"] {
+    font-family: math;
+}
+
 .text {
     font-family: "winter-house";
     font-size: smaller;
@@ -126,6 +135,10 @@
 .pop__button__ok,
 .pop__button__cancel {
     font-family: sans-serif;
+}
+
+.input input {
+    font-family: math;
 }
 
 .___Item--optional [class="ant-form-item-optional"] {
@@ -200,11 +213,31 @@
     margin-inline-end: 8px;
 }
 
+.___Item--fourth label {
+    font-size: small !important;
+}
+
+.___Item--fourth div {
+    padding-top: 0 !important;
+}
+
+.col--fourth {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
+
 .collapse [class="ant-collapse-header"] {
     font-family: 'winter-house';
     font-size: smaller;
-    align-items: center;
+    align-items: flex-end;
     padding-left: 0;
+}
+
+.quill [class="ql-container ql-snow ql-disabled"] {
+    border: none;
 }
 
 @font-face {

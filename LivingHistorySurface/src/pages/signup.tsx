@@ -46,7 +46,7 @@ const Signup = () => {
     const handleSubmit = useCallback(
         async (values: RegisterFormData) => {
             try {
-                messageApi.loading({ content: "Please wait a moment.", duration: 2 });
+                messageApi.loading({ content: "Please wait a moment...", duration: 2 });
                 const response = await fetch("http://localhost:8080/api/createUser", {
                     method: "POST",
                     headers: {
@@ -58,13 +58,13 @@ const Signup = () => {
                     setTimeout(() => {
                         messageApi.success({
                             content: "Congratulations! Your request has been fulfilled.",
-                            duration: 2
+                            duration: 4
                         });
                     }, 2000);
                     setTimeout(() => {
                         messageApi.info({
-                            content: "You are being redirected to the login page.",
-                            duration: 2
+                            content: "You are being redirected to the login page...",
+                            duration: 4
                         });
                     }, 4000);
                     setTimeout(async () => {
@@ -75,7 +75,7 @@ const Signup = () => {
                         messageApi.error({
                             content:
                                 "A duplicate account with this username and email address cannot exist.",
-                                duration: 2
+                                duration: 4
                         });
                     }, 2000);
                 } else if (response.status === 500) {
@@ -83,7 +83,7 @@ const Signup = () => {
                         messageApi.error({
                             content:
                                 "We are experiencing technical difficulties. Please check back later.",
-                                duration: 2
+                                duration: 4
                         });
                     }, 2000);
                 }
@@ -91,8 +91,8 @@ const Signup = () => {
                 setTimeout(() => {
                     messageApi.error({
                         content:
-                            "Unfortunately, this task cannot be completed at this time. Please try again later.",
-                            duration: 2
+                            "I apologize for any inconvenience, but we are unable to complete this task at the moment. ",
+                            duration: 4
                     });
                 }, 2000);
             }

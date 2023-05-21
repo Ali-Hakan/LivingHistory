@@ -21,23 +21,30 @@ import {
     Collapse,
     Alert,
     List,
-    Avatar
+    Avatar,
+    Divider,
 } from "antd";
 import {
+    AimOutlined,
+    CommentOutlined,
+    DislikeOutlined,
     EnvironmentOutlined,
     FileSearchOutlined,
     FileTextOutlined,
+    FileUnknownOutlined,
     HighlightOutlined,
     HomeOutlined,
+    IdcardOutlined,
     IssuesCloseOutlined,
+    KeyOutlined,
     LikeOutlined,
-    MessageOutlined,
     MinusCircleOutlined,
     ProfileOutlined,
     SaveOutlined,
     SearchOutlined,
     SendOutlined,
-    StarOutlined
+    TagsOutlined,
+    UserOutlined
 } from "@ant-design/icons";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -89,7 +96,7 @@ const items: MenuItem[] = [
     },
     {
         key: "5",
-        icon: <ProfileOutlined />,
+        icon: <IdcardOutlined />,
         label: "Profile",
     },
 ];
@@ -137,20 +144,24 @@ const dateOptions: DateOption[] = [
     }
 ];
 
-const Main: React.FunctionComponent = () => {
+const Home: React.FunctionComponent = () => {
     const [formStory] = Form.useForm();
     const [formModal] = Form.useForm();
+    const [formSearch] = Form.useForm();
     const [selectedKeys, setSelectedKeys] = useState<string[]>(["1"]);
     const [openKeys, setOpenKeys] = useState<string[]>(["1"]);
     const [quillValue, setQuillValue] = useState<string>("");
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [cascaderValue, setCascaderValue] = useState<any[]>(["precise", "date"]);
+    const [searchCascaderValue, setSearchCascaderValue] = useState<any[]>(["precise", "date"]);
     const [datePickerValue, setDatePickerValue] = useState<any>();
+    const [searchDatePickerValue, setSearchDatePickerValue] = useState<any>();
     const [current, setCurrent] = useState<string>("1");
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 41.0856396, lng: 29.0424937 });
     const [locations, setLocations] = useState<Location[]>([]);
     const [messageApi, contextHolder] = message.useMessage();
     const [responseMessage, setResponseMessage] = useState<boolean>(false);
+    const [searchResult, setSearchResult] = useState<any[]>([]);
 
     const router = useRouter();
     const { Panel } = Collapse;
@@ -164,7 +175,7 @@ const Main: React.FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        formStory.setFieldValue("location", locations);
+        formStory.setFieldValue("locations", locations);
     }, [locations, formModal]);
 
     const handleFormSubmit = useCallback(() => {
@@ -176,9 +187,9 @@ const Main: React.FunctionComponent = () => {
     const handleStoryFinish = useCallback(() => {
         messageApi.loading({ content: "Please wait a moment...", duration: 2 });
         const formData = formStory.getFieldsValue();
-        const isLocationArray = Array.isArray(formData.location);
+        const isLocationArray = Array.isArray(formData.locations);
         const isDateArray = Array.isArray(formData.date);
-        if ((formData.date == undefined || formData.date == null || (isDateArray && formData.date.length == 0)) && (formData.location == undefined || formData.location == null || (isLocationArray && formData.location.length == 0))) {
+        if ((formData.dates == undefined || formData.dates == null || (isDateArray && formData.dates.length == 0)) && (formData.locations == undefined || formData.locations == null || (isLocationArray && formData.locations.length == 0))) {
             setTimeout(() => {
                 messageApi.error({
                     content:
@@ -188,7 +199,7 @@ const Main: React.FunctionComponent = () => {
             }, 2000);
             return;
         }
-        if (formData.date == undefined || formData.date == null || (isDateArray && formData.date.length == 0)) {
+        if (formData.dates == undefined || formData.dates == null || (isDateArray && formData.dates.length == 0)) {
             setTimeout(() => {
                 messageApi.error({
                     content:
@@ -198,7 +209,7 @@ const Main: React.FunctionComponent = () => {
             }, 2000);
             return;
         }
-        if (formData.location == undefined || formData.location == null || (isLocationArray && formData.location.length == 0)) {
+        if (formData.locations == undefined || formData.locations == null || (isLocationArray && formData.locations.length == 0)) {
             setTimeout(() => {
                 messageApi.error({
                     content:
@@ -211,7 +222,7 @@ const Main: React.FunctionComponent = () => {
         const token = localStorage.getItem("token");
         const processedFormData = {
             ...formData,
-            date: formData.date.map((dateArray: { class: any[]; value: any[][] | any[]; }) => {
+            dates: formData.dates.map((dateArray: { class: any[]; value: any[][] | any[]; }) => {
                 const isIntervalDate = dateArray.class[0] === "interval";
                 if (isIntervalDate) {
                     const startDate = dateArray.value[0][0].format("YYYY-MM-DD");
@@ -223,35 +234,32 @@ const Main: React.FunctionComponent = () => {
                 }
             }),
         };
-        axios
-            .post("http://localhost:8080/api/createStory", processedFormData, {
-                headers: {
-                    Authorization: token,
-                },
-            })
-            .then(() => {
-                setResponseMessage(true);
-            })
-            .catch((error) => {
-                if (error.response && error.response.status === 401) {
-                    localStorage.removeItem("token");
-                    setTimeout(() => {
-                        messageApi.error({
-                            content: "It seems like you have not logged in for some time. Could you please log in again?.",
-                            duration: 2
-                        });
-                    }, 2000);
-                    router.push("/login");
-                } else {
-                    setTimeout(() => {
-                        messageApi.error({
-                            content:
-                                "Unfortunately, this task cannot be completed at this time. Please try again later.",
-                            duration: 2
-                        });
-                    }, 2000);
-                }
-            });
+        axios.post("http://localhost:8080/api/createStory", processedFormData, {
+            headers: {
+                Authorization: token,
+            },
+        }).then(() => {
+            setResponseMessage(true);
+        }).catch((error) => {
+            if (error.response && error.response.status === 401) {
+                localStorage.removeItem("token");
+                setTimeout(() => {
+                    messageApi.error({
+                        content: "It seems like you have not logged in for some time. Could you please log in again?.",
+                        duration: 2
+                    });
+                }, 2000);
+                router.push("/login");
+            } else {
+                setTimeout(() => {
+                    messageApi.error({
+                        content:
+                            "Unfortunately, this task cannot be completed at this time. Please try again later.",
+                        duration: 2
+                    });
+                }, 2000);
+            }
+        });
     }, [formStory, messageApi]);
 
     const handleModalButton = useCallback(() => {
@@ -276,15 +284,19 @@ const Main: React.FunctionComponent = () => {
         []
     );
 
-    const onResponseMessageFirst = useCallback(
-        () => {
-            setResponseMessage(false);
-            setLocations([]);
-            formStory.resetFields();
-            formModal.resetFields();
-        },
-        []
-    );
+    useEffect(() => {
+        if (responseMessage) {
+            const timer = setTimeout(() => {
+                setResponseMessage(false);
+                setLocations([]);
+                formStory.resetFields();
+                formModal.resetFields();
+                setSelectedKeys(["1"]);
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [responseMessage]);
 
     const handleCascader = useCallback(
         (value: SetStateAction<any[]>) => {
@@ -294,18 +306,121 @@ const Main: React.FunctionComponent = () => {
         [formModal]
     );
 
+    const handleSearchCascader = useCallback(
+        (value: SetStateAction<any[]>) => {
+            setSearchCascaderValue(value);
+            formSearch.setFieldValue("cascader", value);
+        },
+        [formSearch]
+    );
+
     const onSearch = useCallback(
         async (value: string) => {
             try {
-                const response = await fetch(`/api/searchStories?query=${value}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log(data);
+                const response = await axios.get("http://localhost:8080/api/searchStories", {
+                    params: {
+                        query: value
+                    }
+                });
+                if (response.status === 200) {
+                    const data = response.data;
+                    const searchResult = data.map((item: any) => {
+                        const quillValue = item.content;
+                        const regex = /<img[^>]+src="([^">]+)"/g;
+                        let match;
+                        const imageDataList = [];
+                        item.dates.forEach((item: { startDate: string | number | Date; endDate: string | number | Date; }) => {
+                            item.startDate = new Date(item.startDate).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit"
+                            });;
+                            item.endDate = new Date(item.endDate).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit"
+                            });;
+                        });
+
+                        while ((match = regex.exec(quillValue))) {
+                            const imageData = match[1];
+                            imageDataList.push(imageData);
+                        }
+
+                        return {
+                            ...item,
+                            imageData: imageDataList
+                        };
+                    });
+                    setSearchResult(searchResult);
                 } else {
-                    console.error("Search request failed");
                 }
             } catch (error) {
-                console.error("Error occurred during search request", error);
+
+            }
+        },
+        []
+    );
+
+    const onAdvancedSearch = useCallback(
+        async (value: any) => {
+            try {
+                if (value.dates != null && value.dates[0] != null) {
+                    const isIntervalDate = value.cascader[0] === "interval";
+                    if (isIntervalDate) {
+                        const startDate = value.dates[0][0].format("YYYY-MM-DD");
+                        const endDate = value.dates[0][1].format("YYYY-MM-DD");
+                        value.startDate = startDate;
+                        value.endDate = endDate;
+                    } else {
+                        const preciseDate = value.dates[0].format("YYYY-MM-DD");
+                        value.startDate = preciseDate;
+                        value.endDate = preciseDate;
+                    };
+                }
+                const refinedValue = {
+                    startDate: value.startDate,
+                    endDate: value.endDate,
+                    locations: value.locations,
+                    content: value.content,
+                    nickname: value.nickname
+                }
+                const response = await axios.post("http://localhost:8080/api/advancedSearchStories", refinedValue);
+                if (response.status === 200) {
+                    const data = response.data;
+                    const searchResult = data.map((item: any) => {
+                        const quillValue = item.content;
+                        const regex = /<img[^>]+src="([^">]+)"/g;
+                        let match;
+                        const imageDataList = [];
+                        item.dates.forEach((item: { startDate: string | number | Date; endDate: string | number | Date; }) => {
+                            item.startDate = new Date(item.startDate).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit"
+                            });;
+                            item.endDate = new Date(item.endDate).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit"
+                            });;
+                        });
+
+                        while ((match = regex.exec(quillValue))) {
+                            const imageData = match[1];
+                            imageDataList.push(imageData);
+                        }
+
+                        return {
+                            ...item,
+                            imageData: imageDataList
+                        };
+                    });
+                    setSearchResult(searchResult);
+                } else {
+                }
+            } catch (error) {
+
             }
         },
         []
@@ -324,6 +439,23 @@ const Main: React.FunctionComponent = () => {
         [formModal]
     );
 
+    const handleSearchDatePicker = useCallback(
+        (dates: any, string: any) => {
+            const dateClass = formSearch.getFieldValue("cascader");
+            if (dateClass != null && dateClass[0] == "interval") {
+                if (dates != null) {
+                    if (dates[0] != null)
+                        dates[0] = dates[0].startOf(dateClass[1]);
+                    if (dates[1] != null)
+                        dates[1] = dates[1].endOf(dateClass[1]);
+                }
+            }
+            setSearchDatePickerValue([dates, string]);
+            formSearch.setFieldValue("dates", [dates, string]);
+        },
+        [formModal]
+    );
+
     const handleInsideMenu: MenuProps["onClick"] = useCallback((e: { key: React.SetStateAction<string>; }) => {
         setCurrent(e.key);
     }, []);
@@ -338,7 +470,6 @@ const Main: React.FunctionComponent = () => {
                 lat: Number(place.geometry?.location?.lat().toFixed(6)),
                 lng: Number(place.geometry?.location?.lng().toFixed(6)),
             }; setLocations([...locations, locationData]);
-            console.log(locationData)
             setMapCenter({ lat: locationData.lat, lng: locationData.lng });
         }
     }, [locations]);
@@ -381,22 +512,24 @@ const Main: React.FunctionComponent = () => {
         { key: "1", icon: <SearchOutlined />, label: "Search" }
     ], []);
 
-    const data = Array.from({ length: 23 }).map((_, i) => ({
-        href: "https://ant.design",
-        title: `ant design part ${i}`,
-        avatar: `https://xsgames.co/randomusers/avatar.php?g=pixel&key=${i}`,
-        description:
-            "Ant Design, a design language for background applications, is refined by Ant UED Team.",
-        content:
-            "We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.",
-    }));
-
     const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
         <Space>
             {React.createElement(icon)}
             {text}
         </Space>
     );
+
+    const validateContent = (_: any, value: string) => {
+        if (value.length < 3) {
+            if (value.length == 0)
+                return Promise.resolve();
+            return Promise.reject(new Error("The value must have at least 3 characters."));
+        }
+        if (/[^\w\s]/.test(value)) {
+            return Promise.reject(new Error("The value cannot contain symbols."));
+        }
+        return Promise.resolve();
+    };
 
     return (
         <Layout className={styles["layout__outside"]}>
@@ -422,25 +555,6 @@ const Main: React.FunctionComponent = () => {
                         style={{ fontFamily: "math" }}
                         status="success"
                         title="Congratulations on successfully submitting the story!"
-                        extra={[
-                            <Button className={styles["response__button--third"]}
-                                onClick={() => setResponseMessage(false)}
-                                type="primary"
-                                key="buy">
-                                {"View your post now!"}
-                            </Button>,
-                            <Button className={styles["response__button--first"]}
-                                onClick={onResponseMessageFirst}
-                                type="primary" key="console">
-                                {"Create another!"}
-                            </Button>,
-                            <Button className={styles["response__button--secondary"]}
-                                onClick={() => setResponseMessage(false)}
-                                type="primary"
-                                key="buy">
-                                {"Redirect to the home page!"}
-                            </Button>,
-                        ]}
                     />
                 ) : (
                     <>
@@ -472,8 +586,8 @@ const Main: React.FunctionComponent = () => {
                                         onFormFinish={(name, { values, forms }) => {
                                             if (name === "modal") {
                                                 const { main } = forms;
-                                                const date = main.getFieldValue("date") || [];
-                                                main.setFieldValue("date", [...date, values]);
+                                                const datesList = main.getFieldValue("dates") || [];
+                                                main.setFieldValue("dates", [...datesList, values]);
                                             }
                                         }}
                                     >
@@ -496,7 +610,7 @@ const Main: React.FunctionComponent = () => {
                                                     ]}>
                                                         <Input />
                                                     </__Item>
-                                                    <__Item name="story" label="Story" required rules={[
+                                                    <__Item name="content" label="Story" required rules={[
                                                         {
                                                             required: true,
                                                             message: "You must provide the story."
@@ -509,7 +623,7 @@ const Main: React.FunctionComponent = () => {
                                                             }}
                                                         />
                                                     </__Item>
-                                                    <___Item className={styles["___Item--optional"]} name="tag" label="Tag">
+                                                    <___Item className={styles["___Item--optional"]} name="tags" label="Tag">
                                                         <Select
                                                             className={styles["select"]}
                                                             mode="tags"
@@ -521,27 +635,27 @@ const Main: React.FunctionComponent = () => {
                                                         required
                                                         style={{ marginBottom: "12px" }}
                                                         label="Date"
-                                                        shouldUpdate={(prevValues: any, curValues: any) => prevValues.date !== curValues.date}
+                                                        shouldUpdate={(prevValues: any, curValues: any) => prevValues.dates !== curValues.dates}
                                                     >
                                                         {({ getFieldValue }) => {
-                                                            const dates: any[] = getFieldValue("date") || [];
+                                                            const datesList: any[] = getFieldValue("dates") || [];
                                                             const handleDeleteDate = (dateIndex: number) => {
-                                                                const dateRenewed = [...dates];
+                                                                const dateRenewed = [...datesList];
                                                                 dateRenewed.splice(dateIndex, 1);
-                                                                formStory.setFieldsValue({ date: dateRenewed });
+                                                                formStory.setFieldsValue({ dates: dateRenewed });
                                                             };
-                                                            return dates.length ? (
+                                                            return datesList.length ? (
                                                                 <Space direction="vertical">
-                                                                    {dates.map((date, index) => (
+                                                                    {datesList.map((dates, index) => (
                                                                         <Space>
                                                                             <MinusCircleOutlined
                                                                                 className={styles["icon"]}
                                                                                 onClick={() => handleDeleteDate(index)}
                                                                             />
-                                                                            <Text className={styles["text--secondary"]} key={date.value[1]}>
-                                                                                {Array.isArray(date.value[1])
-                                                                                    ? date.value[1][0] + " & " + date.value[1][1]
-                                                                                    : date.value[1]}
+                                                                            <Text className={styles["text--secondary"]} key={dates.value[1]}>
+                                                                                {Array.isArray(dates.value[1])
+                                                                                    ? dates.value[1][0] + " & " + dates.value[1][1]
+                                                                                    : dates.value[1]}
                                                                             </Text>
                                                                         </Space>
                                                                     ))}
@@ -624,8 +738,8 @@ const Main: React.FunctionComponent = () => {
                                                     </___Item>
                                                 </>
                                             )}
-                                            <Form.Item noStyle name="location" />
-                                            <Form.Item noStyle name="date" />
+                                            <Form.Item noStyle name="locations" />
+                                            <Form.Item noStyle name="dates" />
                                         </Form>
                                         <Modal
                                             className={styles["modal"]}
@@ -683,34 +797,34 @@ const Main: React.FunctionComponent = () => {
                                                     ]}
                                                 >
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "date"]) && (
-                                                        <DatePicker onChange={handleDatePicker} />
+                                                        <DatePicker className={styles["input"]} onChange={handleDatePicker} />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "week"]) && (
-                                                        <DatePicker onChange={handleDatePicker} picker="week" />
+                                                        <DatePicker className={styles["input"]} onChange={handleDatePicker} picker="week" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "month"]) && (
-                                                        <DatePicker onChange={handleDatePicker} picker="month" />
+                                                        <DatePicker className={styles["input"]} onChange={handleDatePicker} picker="month" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "quarter"]) && (
-                                                        <DatePicker onChange={handleDatePicker} picker="quarter" />
+                                                        <DatePicker className={styles["input"]} onChange={handleDatePicker} picker="quarter" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["precise", "year"]) && (
-                                                        <DatePicker onChange={handleDatePicker} picker="year" />
+                                                        <DatePicker className={styles["input"]} onChange={handleDatePicker} picker="year" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "date"]) && (
-                                                        <RangePicker onChange={handleDatePicker} picker="date" />
+                                                        <RangePicker className={styles["input"]} onChange={handleDatePicker} picker="date" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "week"]) && (
-                                                        <RangePicker onChange={handleDatePicker} picker="week" />
+                                                        <RangePicker className={styles["input"]} onChange={handleDatePicker} picker="week" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "month"]) && (
-                                                        <RangePicker onChange={handleDatePicker} picker="month" />
+                                                        <RangePicker className={styles["input"]} onChange={handleDatePicker} picker="month" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "quarter"]) && (
-                                                        <RangePicker onChange={handleDatePicker} picker="quarter" />
+                                                        <RangePicker className={styles["input"]} onChange={handleDatePicker} picker="quarter" />
                                                     )}
                                                     {JSON.stringify(cascaderValue) === JSON.stringify(["interval", "year"]) && (
-                                                        <RangePicker onChange={handleDatePicker} picker="year" />
+                                                        <RangePicker className={styles["input"]} onChange={handleDatePicker} picker="year" />
                                                     )}
                                                 </___Item>
                                             </Form>
@@ -731,10 +845,13 @@ const Main: React.FunctionComponent = () => {
                                     />
                                 </Header>
                                 <Content className={styles["content__inside"]}>
-                                    <Form
+                                    <Form style={{ paddingBottom: 0 }}
+                                        form={formSearch}
                                         className={styles["form"]}
+                                        initialValues={{ cascader: ["precise", "date"] }}
                                         name="search"
-                                        layout="vertical">
+                                        layout="vertical"
+                                        onFinish={onAdvancedSearch}>
                                         <___Item
                                             style={{ marginBottom: 0 }}>
                                             <Space size={64} align="center">
@@ -746,55 +863,207 @@ const Main: React.FunctionComponent = () => {
                                                     </_AutoComplete>
                                                 </___Item>
                                                 <Alert style={{ fontFamily: "math" }}
-                                                    message="Autosearch meticulously scans through various elements such as usernames, tags, and text content, ensuring comprehensive results. To refine your search even further, simply click on the advanced search option." type="info" showIcon />
+                                                    message="Autosearch meticulously scans through various elements, ensuring comprehensive results. To refine your search even further, simply click on the advanced search option." type="info" showIcon />
                                             </Space>
                                         </___Item>
                                         <___Item
                                             style={{ margin: 0 }}>
                                             <Collapse className={styles["collapse"]} ghost>
                                                 <Panel key={""} header={"Advanced Search"}>
-
+                                                    <Row>
+                                                        <Col span={3}
+                                                        >
+                                                            <___Item
+                                                                className={styles["___Item--fourth"]}
+                                                                name={"cascader"} label={"Date"}>
+                                                                <_Cascader
+                                                                    className={styles["cascader"]}
+                                                                    options={dateOptions}
+                                                                    onChange={handleSearchCascader}
+                                                                    defaultValue={["precise", "date"]}
+                                                                    expandTrigger="hover"
+                                                                />
+                                                            </___Item>
+                                                            <___Item
+                                                                className={styles["___Item--third"]}
+                                                                rules={[
+                                                                    {
+                                                                        required: true,
+                                                                        message: "You must provide the date."
+                                                                    }
+                                                                ]}
+                                                            >
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["precise", "date"]) && (
+                                                                    <DatePicker className={styles["input"]} onChange={handleSearchDatePicker} />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["precise", "week"]) && (
+                                                                    <DatePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="week" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["precise", "month"]) && (
+                                                                    <DatePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="month" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["precise", "quarter"]) && (
+                                                                    <DatePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="quarter" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["precise", "year"]) && (
+                                                                    <DatePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="year" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["interval", "date"]) && (
+                                                                    <RangePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="date" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["interval", "week"]) && (
+                                                                    <RangePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="week" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["interval", "month"]) && (
+                                                                    <RangePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="month" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["interval", "quarter"]) && (
+                                                                    <RangePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="quarter" />
+                                                                )}
+                                                                {JSON.stringify(searchCascaderValue) === JSON.stringify(["interval", "year"]) && (
+                                                                    <RangePicker className={styles["input"]} onChange={handleSearchDatePicker} picker="year" />
+                                                                )}
+                                                            </___Item>
+                                                        </Col>
+                                                        <Col span={3}
+                                                            offset={1}
+                                                        >
+                                                            <___Item
+                                                                name={"nickname"}
+                                                                className={styles["___Item--fourth"]}
+                                                                label={"Nickname"}>
+                                                                <Input className={styles["input"]} placeholder="Input nickname" prefix={<UserOutlined />} />
+                                                            </___Item>
+                                                            <___Item>
+                                                                <Button
+                                                                    shape="round"
+                                                                    block
+                                                                    style={{ alignItems: "center", display: "flex", justifyContent: "center" }}
+                                                                    className={styles["submit__button"]}
+                                                                    type="primary"
+                                                                    htmlType="submit"
+                                                                    icon={<SearchOutlined />}>
+                                                                    <Text
+                                                                        style={{ fontFamily: "math", fontSize: "medium" }}>
+                                                                        {"Search"}
+                                                                    </Text>
+                                                                </Button>
+                                                            </___Item>
+                                                        </Col>
+                                                        <Col span={3}
+                                                            offset={1}>
+                                                            <___Item
+                                                                name={"locations"}
+                                                                className={styles["___Item--fourth"]}
+                                                                label={"Location"}>
+                                                                <Input className={styles["input"]} placeholder="Input location" prefix={<AimOutlined />} />
+                                                            </___Item>
+                                                        </Col>
+                                                        <Col span={3}
+                                                            offset={1}>
+                                                            <___Item
+                                                                name={"content"}
+                                                                className={styles["___Item--fourth"]}
+                                                                label={"Content & Tag"}
+                                                                rules={[
+                                                                    {
+                                                                        validator: validateContent
+                                                                    }
+                                                                ]}>
+                                                                <Input
+                                                                    className={styles["input"]}
+                                                                    placeholder="Input content or tag"
+                                                                    prefix={<TagsOutlined />}
+                                                                />
+                                                            </___Item>
+                                                        </Col>
+                                                        <Col
+                                                            className={styles["col--fourth"]}
+                                                            offset={1}
+                                                            span={8}>
+                                                            <Alert style={{ fontFamily: "math" }}
+                                                                message="Advanced conditions are combined when searching, hence narrowing the search result. Keep in mind that empty fields shall be disregarded." type="info" showIcon />
+                                                        </Col>
+                                                        <Form.Item noStyle name="dates" />
+                                                    </Row>
+                                                    <Row>
+                                                        <Divider></Divider>
+                                                    </Row>
                                                 </Panel>
                                             </Collapse>
                                         </___Item>
                                         <___Item>
                                             <List
+                                                className={styles["search__button"]}
                                                 itemLayout="vertical"
                                                 size="large"
-                                                pagination={{
-                                                    onChange: (page) => {
-                                                        console.log(page);
-                                                    },
-                                                    pageSize: 3,
-                                                }}
-                                                dataSource={data}
-                                                footer={
-                                                    <div>
-                                                        <b>ant design</b> footer part
-                                                    </div>
-                                                }
+                                                pagination={{ pageSize: 3 }}
+                                                dataSource={searchResult}
                                                 renderItem={(item) => (
                                                     <List.Item
                                                         key={item.title}
                                                         actions={[
-                                                            <IconText icon={StarOutlined} text="156" key="list-vertical-star-o" />,
-                                                            <IconText icon={LikeOutlined} text="156" key="list-vertical-like-o" />,
-                                                            <IconText icon={MessageOutlined} text="2" key="list-vertical-message" />,
+                                                            <IconText icon={LikeOutlined} text={Array.isArray(item.feedback) ? item.feedback.reduce((count: number, item: { liked: any; }) => {
+                                                                if (item.liked) {
+                                                                    count++;
+                                                                }
+                                                                return count;
+                                                            }, 0) : "0"} />,
+                                                            <IconText icon={DislikeOutlined} text={Array.isArray(item.feedback) ? item.feedback.reduce((count: number, item: { liked: any; }) => {
+                                                                if (!item.liked) {
+                                                                    count++;
+                                                                }
+                                                                return count;
+                                                            }, 0) : "0"} />,
+                                                            <IconText icon={CommentOutlined} text={Array.isArray(item.comment) ? item.comment.length : "0"} />
                                                         ]}
                                                         extra={
-                                                            <img
-                                                                width={272}
-                                                                alt="logo"
-                                                                src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
-                                                            />
+                                                            <img style={{ maxWidth: "235px", maxHeight: "235px" }} src={item.imageData[0]} alt={""} />
                                                         }
                                                     >
                                                         <List.Item.Meta
-                                                            avatar={<Avatar src={item.avatar} />}
-                                                            title={<a href={item.href}>{item.title}</a>}
-                                                            description={item.description}
+                                                            avatar={
+                                                                <Space direction="vertical"
+                                                                    className={styles["space"]}>
+                                                                    <Avatar size={"large"} icon={<UserOutlined />} />
+                                                                    <Text style={{ fontWeight: "bold" }} >{item.nickname}</Text>
+                                                                </Space>}
+                                                            title={
+                                                                <Row
+                                                                    justify={"space-between"}>
+                                                                    <Button type="link">{item.title}
+                                                                    </Button>
+                                                                    <Text>{`Created on: ${new Date(item.dates[0].startDate.substring(0, 10)).toLocaleDateString('en-US', {
+                                                                        year: "numeric",
+                                                                        month: "long",
+                                                                        day: "numeric"
+                                                                    })}`}</Text>
+                                                                </Row>}
+                                                            description={
+                                                                <>
+                                                                    <Space direction="vertical">
+                                                                        <Text style={{ fontWeight: "100" }}
+                                                                            className={styles["text--secondary"]}>
+                                                                            {item.dates[0].startDate === item.dates[0].endDate
+                                                                                ? item.dates[0].startDate.substring(0, 10)
+                                                                                : item.dates[0].startDate.substring(0, 10) + " & " + item.dates[0].endDate.substring(0, 10)}
+                                                                        </Text>
+                                                                        <Text style={{ fontWeight: "100" }}
+                                                                            className={styles["text--secondary"]}>
+                                                                            {item.locations[0].name}
+                                                                        </Text>
+                                                                    </Space>
+                                                                </>}
                                                         />
-                                                        {item.content}
+                                                        <>
+                                                            <ReactQuill
+                                                                value={item.content.substring(0, (item.content.substring(0, 250).lastIndexOf(" "))) + "..."}
+                                                                readOnly={true}
+                                                                theme="snow"
+                                                                modules={{ toolbar: false }}
+                                                                className={styles["quill"]}
+                                                            />
+                                                        </>
                                                     </List.Item>
                                                 )}
                                             />
@@ -814,4 +1083,4 @@ const Main: React.FunctionComponent = () => {
     );
 };
 
-export default Main;
+export default Home;

@@ -3,10 +3,13 @@ package com.LivingHistory.Controller;
 import com.LivingHistory.Exception.JWTTokenExpiration;
 import com.LivingHistory.Modal.Story;
 import com.LivingHistory.Modal.User;
+import com.LivingHistory.Modal.DTO.StoryDTO;
+import com.LivingHistory.Modal.DTO.StoryRequest;
 import com.LivingHistory.Service.StoryService;
 import com.LivingHistory.Service.UserService;
 import com.LivingHistory.Utilization.JWT;
 
+import java.text.ParseException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +57,14 @@ public class StoryController {
     }
 
     @GetMapping("/searchStories")
-    public ResponseEntity<List<Story>> searchStories(@RequestParam("query") String query) {
-        List<Story> stories = storyService.searchStories(query);
+    public ResponseEntity<List<StoryDTO>> searchStories(@RequestParam("query") String query) {
+        List<StoryDTO> stories = storyService.searchStories(query);
+        return ResponseEntity.ok(stories);
+    }
+
+    @PostMapping("/advancedSearchStories")
+    public ResponseEntity<List<StoryDTO>> advancedSearchStories(@RequestBody StoryRequest storyRequest) throws ParseException {
+        List<StoryDTO> stories = storyService.advancedSearchStories(storyRequest);
         return ResponseEntity.ok(stories);
     }
 }
