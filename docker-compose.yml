@@ -1,0 +1,40 @@
+version: '3.7'
+services:
+  backend:
+    build:
+      context: ./LivingHistoryApi
+    container_name: LivingHistoryApi
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./LivingHistorySurface/.env
+    volumes:
+      - backend-data:/path/to/backend/data
+    depends_on:
+      - db
+
+  frontend:
+    build: 
+        context: ./LivingHistorySurface
+    container_name: LivingHistorySurface
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./LivingHistorySurface/.env
+    depends_on:
+      - backend
+
+  db:
+    image: postgres
+    restart: always
+    container_name: db
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./LivingHistorySurface/.env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  backend-data:
+  db-data:
