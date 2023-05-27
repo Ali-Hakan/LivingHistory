@@ -1,4 +1,4 @@
-FROM maven:4.0.0
+FROM maven:3.8.4-openjdk-17-slim
 COPY . /LivingHistoryApi
 WORKDIR /LivingHistoryApi
 RUN mvn clean install -DskipTests
