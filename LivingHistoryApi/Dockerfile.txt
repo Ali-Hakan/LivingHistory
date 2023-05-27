@@ -1,0 +1,6 @@
+FROM maven:4.0.0
+COPY . /LivingHistoryApi
+WORKDIR /LivingHistoryApi
+RUN mvn clean install -DskipTests
+EXPOSE 8080
+CMD ["java", "-jar", "target/LivingHistory-0.0.1-SNAPSHOT.jar"]
