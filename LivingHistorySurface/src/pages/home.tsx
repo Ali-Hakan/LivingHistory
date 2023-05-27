@@ -1007,7 +1007,7 @@ const Home: React.FunctionComponent = () => {
                                                                 return datesList.length ? (
                                                                     <Space direction="vertical">
                                                                         {datesList.map((dates, index) => (
-                                                                            <Space>
+                                                                            <Space key={dates.value != undefined ? dates.value[1] : dates.startDate}>
                                                                                 <MinusCircleOutlined
                                                                                     className={styles["icon"]}
                                                                                     onClick={() => handleDeleteDate(index)}
@@ -1109,7 +1109,7 @@ const Home: React.FunctionComponent = () => {
                                                 open={modalOpen}
                                                 closable={false}
                                                 footer={[
-                                                    <Layout className={styles["layout__modal"]}>
+                                                    <Layout key="layout" className={styles["layout__modal"]}>
                                                         <Button
                                                             className={styles["modal__button--first"]} type="primary"
                                                             onClick={handleModalButtonOk}
@@ -1358,19 +1358,19 @@ const Home: React.FunctionComponent = () => {
                                                         <List.Item
                                                             key={item.title}
                                                             actions={[
-                                                                <IconText icon={LikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
+                                                                <IconText key="like" icon={LikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
                                                                     if (item.liked) {
                                                                         count++;
                                                                     }
                                                                     return count;
                                                                 }, 0) : "0"} />,
-                                                                <IconText icon={DislikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
+                                                                <IconText key="dislike" icon={DislikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
                                                                     if (!item.liked) {
                                                                         count++;
                                                                     }
                                                                     return count;
                                                                 }, 0) : "0"} />,
-                                                                <IconText icon={CommentOutlined} text={Array.isArray(item.comments) ? item.comments.length : "0"} />
+                                                                <IconText key="comment" icon={CommentOutlined} text={Array.isArray(item.comments) ? item.comments.length : "0"} />
                                                             ]}
                                                             extra={
                                                                 <img style={{ maxWidth: "235px", maxHeight: "235px" }} src={item.imageData[0]} alt={""} />
@@ -1451,19 +1451,19 @@ const Home: React.FunctionComponent = () => {
                                                     <List.Item
                                                         key={item.title}
                                                         actions={[
-                                                            <IconText icon={LikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
+                                                            <IconText key="iconText-first" icon={LikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
                                                                 if (item.liked) {
                                                                     count++;
                                                                 }
                                                                 return count;
                                                             }, 0) : "0"} />,
-                                                            <IconText icon={DislikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
+                                                            <IconText key="iconText-second" icon={DislikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
                                                                 if (!item.liked) {
                                                                     count++;
                                                                 }
                                                                 return count;
                                                             }, 0) : "0"} />,
-                                                            <IconText icon={CommentOutlined} text={Array.isArray(item.comments) ? item.comments.length : "0"} />
+                                                            <IconText key="iconText-third" icon={CommentOutlined} text={Array.isArray(item.comments) ? item.comments.length : "0"} />
                                                         ]}
                                                         extra={
                                                             <img style={{ maxWidth: "235px", maxHeight: "235px" }} src={item.imageData[0]} alt={""} />
@@ -1543,20 +1543,21 @@ const Home: React.FunctionComponent = () => {
                                                     <List.Item
                                                         key={item.title}
                                                         actions={[
-                                                            <IconText icon={LikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
+                                                            <IconText key="iconText-first" icon={LikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
                                                                 if (item.liked) {
                                                                     count++;
                                                                 }
                                                                 return count;
                                                             }, 0) : "0"} />,
-                                                            <IconText icon={DislikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
+                                                            <IconText key="iconText-second" icon={DislikeOutlined} text={Array.isArray(item.feedbacks) ? item.feedbacks.reduce((count: number, item: { liked: any; }) => {
                                                                 if (!item.liked) {
                                                                     count++;
                                                                 }
                                                                 return count;
                                                             }, 0) : "0"} />,
-                                                            <IconText icon={CommentOutlined} text={Array.isArray(item.comments) ? item.comments.length : "0"} />,
+                                                            <IconText key="iconText-third" icon={CommentOutlined} text={Array.isArray(item.comments) ? item.comments.length : "0"} />,
                                                             <Button
+                                                                key="iconText-button"
                                                                 onClick={() => editStory(item)}
                                                                 style={{ fontFamily: "math", backgroundColor: "cornflowerblue" }}
                                                                 type="primary"
