@@ -884,7 +884,7 @@ const Home: React.FunctionComponent = () => {
                 <Row justify="space-between" align="middle" style={{ width: "100%" }}>
                     <Col>
                         <Image
-                            src={"./images/living-history.png"}
+                            src={"/images/LivingHistory.png"}
                             alt={"Gothicha"}
                             width={380}
                             height={380}
