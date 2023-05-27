@@ -28,6 +28,8 @@ public class StoryDTO {
 
     private String nickname;
 
+    private String username;
+
     private List<FeedbackDTO> feedbacks;
 
     private List<CommentDTO> comments;

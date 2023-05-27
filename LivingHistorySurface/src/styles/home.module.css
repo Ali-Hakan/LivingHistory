@@ -99,6 +99,16 @@
     display: flex;
 }
 
+.list li {
+    padding-bottom: 0;
+    padding-left: 0;
+}
+
+.quill [class="ql-editor ql-blank"] {
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
 .select [class="ant-select-selector"] {
     font-size: small;
     font-family: math;
@@ -107,6 +117,11 @@
 .cascader [class="ant-select-selection-item"],
 .select--second [class="ant-select-selector"] {
     font-family: math;
+}
+
+.text__header {
+    font-family: "winter-house";
+    font-size: large;
 }
 
 .text {
@@ -227,12 +242,10 @@
     justify-content: center;
 }
 
-
-
 .collapse [class="ant-collapse-header"] {
     font-family: 'winter-house';
     font-size: smaller;
-    align-items: flex-end;
+    align-items: flex-end !important;
     padding-left: 0;
 }
 

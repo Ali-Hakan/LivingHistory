@@ -18,13 +18,13 @@ public class Location {
     private Long id;
 
     private String name;
-    private double latitude;
-    private double longtitude;
+    private double lat;
+    private double lng;
 
-    public Location(String name, double latitude, double longtitude) {
+    public Location(String name, double lat, double lng) {
         this.name = name;
-        this.latitude = latitude;
-        this.longtitude = longtitude;
+        this.lat = lat;
+        this.lng = lng;
     }
 
     public Location() {

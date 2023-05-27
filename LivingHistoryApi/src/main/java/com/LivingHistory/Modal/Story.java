@@ -66,7 +66,7 @@ public class Story {
     @JoinTable(name = "story_location", joinColumns = @JoinColumn(name = "story_id"), inverseJoinColumns = @JoinColumn(name = "location_id"))
     private List<Location> locations;
 
-    @JsonIgnoreProperties({"password", "email", "gender", "username"})
+    @JsonIgnoreProperties({"password", "email", "gender"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

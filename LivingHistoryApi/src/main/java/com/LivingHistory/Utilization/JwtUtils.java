@@ -18,7 +18,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 @Component
-public class JWT {
+public class JwtUtils {
 
     @Value("${jwt.secret}")
     private String jwtSecret;

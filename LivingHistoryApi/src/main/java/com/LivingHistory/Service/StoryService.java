@@ -6,13 +6,16 @@ import com.LivingHistory.Modal.Custom.Feedback;
 import com.LivingHistory.Modal.DTO.CommentDTO;
 import com.LivingHistory.Modal.DTO.FeedbackDTO;
 import com.LivingHistory.Modal.DTO.StoryDTO;
-import com.LivingHistory.Modal.DTO.StoryRequest;
+import com.LivingHistory.Modal.Request.StoryRequest;
+import com.LivingHistory.Repository.CommentRepository;
 import com.LivingHistory.Repository.StoryRepository;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -20,12 +23,74 @@ import org.springframework.stereotype.Service;
 public class StoryService {
     private final StoryRepository storyRepository;
 
-    public StoryService(StoryRepository storyRepository) {
+    private final CommentRepository commentRepository;
+
+    public StoryService(StoryRepository storyRepository, CommentRepository commentRepository) {
         this.storyRepository = storyRepository;
+        this.commentRepository = commentRepository;
     }
 
     public Story createStory(Story story) {
         return storyRepository.save(story);
+    }
+
+    public Story updateStory(Long storyId, Story updatedStory) throws Exception {
+        Optional<Story> storyOptional = storyRepository.findById(storyId);
+        if (storyOptional.isPresent()) {
+          Story story = storyOptional.get();
+          story.setTitle(updatedStory.getTitle());
+          story.setContent(updatedStory.getContent());
+          story.setDates(updatedStory.getDates());
+          story.setLocations(updatedStory.getLocations());
+          story.setTags(updatedStory.getTags());
+          return storyRepository.save(story);
+        }
+        throw new Exception("Story not found");
+      }
+
+    public List<StoryDTO> getAllStoriesSortedByCreationDate() {
+        List<Story> stories = storyRepository.findAll();
+
+        stories.sort(Comparator.comparing(Story::getCreationDate).reversed());
+
+        List<StoryDTO> storyDtos = new ArrayList<>();
+        for (Story story : stories) {
+            StoryDTO storyDto = new StoryDTO();
+            storyDto.setId(story.getId());
+            storyDto.setTitle(story.getTitle());
+            storyDto.setContent(story.getContent());
+            storyDto.setTags(story.getTags());
+            storyDto.setDates(story.getDates());
+            storyDto.setLocations(story.getLocations());
+            storyDto.setNickname(story.getUser().getNickname());
+            storyDto.setCreationDate(story.getCreationDate());
+            storyDto.setUsername(story.getUser().getUsername());
+            storyDtos.add(storyDto);
+
+            List<CommentDTO> commentDtos = new ArrayList<>();
+            for (Comment comment : story.getComments()) {
+                CommentDTO commentDto = new CommentDTO();
+                commentDto.setId(comment.getId());
+                commentDto.setUsername(comment.getUser().getUsername());
+                commentDto.setNickname(comment.getUser().getNickname());
+                commentDto.setContent(comment.getContent());
+                commentDtos.add(commentDto);
+            }
+            storyDto.setComments(commentDtos);
+
+            List<FeedbackDTO> feedbackDtos = new ArrayList<>();
+            for (Feedback feedback : story.getFeedbacks()) {
+                FeedbackDTO feedbackDto = new FeedbackDTO();
+                feedbackDto.setId(feedback.getId());
+                feedbackDto.setUsername(feedback.getUser().getUsername());
+                feedbackDto.setNickname(feedback.getUser().getNickname());
+                feedbackDto.setLiked(feedback.isLiked());
+                feedbackDtos.add(feedbackDto);
+            }
+            storyDto.setFeedbacks(feedbackDtos);
+        }
+
+        return storyDtos;
     }
 
     public List<StoryDTO> searchStories(String query) {
@@ -56,7 +121,7 @@ public class StoryService {
             storyDto.setTags(story.getTags());
             storyDto.setDates(story.getDates());
             storyDto.setLocations(story.getLocations());
-            storyDto.setNickname(story.getUser().getUsername());
+            storyDto.setNickname(story.getUser().getNickname());
             storyDto.setCreationDate(story.getCreationDate());
             storyDtos.add(storyDto);
 
@@ -151,6 +216,37 @@ public class StoryService {
         }
 
         return storyDtos;
+    }
+
+    public Story getStoryById(Long id) throws Exception {
+        Optional<Story> storyOptional = storyRepository.findById(id);
+        if (storyOptional.isPresent()) {
+            return storyOptional.get();
+        }
+        throw new Exception("Story not found");
+    }
+
+    public Comment addCommentToStory(Comment comment) {
+        Comment savedComment = commentRepository.save(comment);
+
+        savedComment.getStory().getComments().add(savedComment);
+        storyRepository.save(savedComment.getStory());
+
+        return savedComment;
+    }
+
+    public Comment getCommentById(Long commentId) {
+        Optional<Comment> commentOptional = commentRepository.findById(commentId);
+        return commentOptional.orElse(null);
+    }
+
+    public void deleteComment(Comment comment) {
+        comment.getStory().getComments().remove(comment);
+        commentRepository.delete(comment);
+    }
+
+    public Story saveStory(Story story) {
+        return storyRepository.save(story);
     }
 
     private int calculateRelevance(Story story, String query) {

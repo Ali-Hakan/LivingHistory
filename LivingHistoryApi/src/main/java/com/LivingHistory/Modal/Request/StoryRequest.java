@@ -1,4 +1,4 @@
-package com.LivingHistory.Modal.DTO;
+package com.LivingHistory.Modal.Request;
 
 import java.util.Date;
 

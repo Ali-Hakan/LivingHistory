@@ -47,7 +47,7 @@ const Signup = () => {
         async (values: RegisterFormData) => {
             try {
                 messageApi.loading({ content: "Please wait a moment...", duration: 2 });
-                const response = await fetch("http://localhost:8080/api/createUser", {
+                const response = await fetch(`${process.env.BACKEND_IP}/api/createUser`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
