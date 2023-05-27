@@ -1,10 +1,13 @@
-package com.LivingHistory.Utils;
+package com.LivingHistory.Utilization;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import com.LivingHistory.Exception.JWTTokenExpiration;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -42,11 +45,15 @@ public class JwtUtils {
     }
 
     public String extractUsernameFromJwtToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtSecret)
+                    .parseClaimsJws(token)
+                    .getBody();
 
-        return claims.getSubject();
+            return claims.getSubject();
+        } catch (ExpiredJwtException e) {
+            throw new JWTTokenExpiration("Token expired.");
+        }
     }
 }

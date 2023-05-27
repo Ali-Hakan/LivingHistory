@@ -46,8 +46,8 @@ const Signup = () => {
     const handleSubmit = useCallback(
         async (values: RegisterFormData) => {
             try {
-                messageApi.loading({ content: "Please wait a moment.", duration: 1 });
-                const response = await fetch("http://localhost:8080/api/createUser", {
+                messageApi.loading({ content: "Please wait a moment...", duration: 2 });
+                const response = await fetch(`${process.env.BACKEND_IP}/api/createUser`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -58,38 +58,43 @@ const Signup = () => {
                     setTimeout(() => {
                         messageApi.success({
                             content: "Congratulations! Your request has been fulfilled.",
-                        });
-                    }, 1000);
-                    setTimeout(() => {
-                        messageApi.info({
-                            content: "You are being redirected to the login page.",
+                            duration: 4
                         });
                     }, 2000);
+                    setTimeout(() => {
+                        messageApi.info({
+                            content: "You are being redirected to the login page...",
+                            duration: 4
+                        });
+                    }, 4000);
                     setTimeout(async () => {
                         await router.push(`/login?value=${values.username}`);
-                    }, 3000);
+                    }, 6000);
                 } else if (response.status === 400) {
                     setTimeout(() => {
                         messageApi.error({
                             content:
                                 "A duplicate account with this username and email address cannot exist.",
+                                duration: 4
                         });
-                    }, 1000);
+                    }, 2000);
                 } else if (response.status === 500) {
                     setTimeout(() => {
                         messageApi.error({
                             content:
                                 "We are experiencing technical difficulties. Please check back later.",
+                                duration: 4
                         });
-                    }, 1000);
+                    }, 2000);
                 }
             } catch (error) {
                 setTimeout(() => {
                     messageApi.error({
                         content:
-                            "Unfortunately, this task cannot be completed at this time. Please try again later.",
+                            "I apologize for any inconvenience, but we are unable to complete this task at the moment. ",
+                            duration: 4
                     });
-                }, 1000);
+                }, 2000);
             }
         },
         [messageApi, router]

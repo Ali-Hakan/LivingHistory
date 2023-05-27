@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.LivingHistory.Model.User;
+import com.LivingHistory.Modal.User;
 import com.LivingHistory.Repository.UserRepository;
 
 @Service
@@ -36,12 +36,16 @@ public class UserService {
         return true; 
     }
 
-    public boolean authenticateUser(String usernameOrEmail, String password) {
+    public User authenticateUser(String usernameOrEmail, String password) {
         User user = userRepository.findByUsernameOrEmail(usernameOrEmail);
-        if (user == null) {
-            return false;
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+            return user;
         }
-        return passwordEncoder.matches(password, user.getPassword());
+        return null;
+    }
+
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     public User findByUsername(String username) {

@@ -1,4 +1,4 @@
-package com.LivingHistory.Model;
+package com.LivingHistory.Modal;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

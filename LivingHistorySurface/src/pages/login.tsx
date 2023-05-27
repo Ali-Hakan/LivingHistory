@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Button, Card, Checkbox, Divider, Form, Input, Layout, message } from "antd";
 import { CloseCircleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
@@ -14,7 +14,7 @@ interface LoginValues {
     remember: boolean;
 }
 
-const API_URL = "http://localhost:8080/api/login";
+const API_URL = `${process.env.BACKEND_IP}/api/login`;
 
 async function loginRequest(values: LoginValues) {
     const response = await fetch(API_URL, {
@@ -39,6 +39,12 @@ const Login: React.FC = () => {
             const data = await loginRequest(values);
             if (data.success) {
                 localStorage.setItem("token", data.token);
+                if (values.remember) {
+                    const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                    document.cookie = `authToken=${data.token}; expires=${expirationDate.toUTCString()}; path=/`;
+                } else {
+                    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                }
                 router.push("/home");
             } else {
                 messageApi.error({
@@ -57,19 +63,30 @@ const Login: React.FC = () => {
         setLoading(false);
     }, [router]);
 
+    useEffect(() => {
+        const authToken = document.cookie
+            .split(";")
+            .map((cookie) => cookie.trim())
+            .find((cookie) => cookie.startsWith("authToken="));
+
+        if (authToken) {
+            const token = authToken.split("=")[1];
+            localStorage.setItem("token", token);
+            router.push("/home");
+        }
+    }, [router]);
+
     return (
-        <Layout 
-            className={styles["layout"]}>
+        <Layout className={styles["layout"]}>
             {contextHolder}
             <Header />
-            <Content 
-                className={styles["content"]}>
+            <Content className={styles["content"]}>
                 <Card>
                     <Form
                         className={styles["form"]}
                         name="login"
                         onFinish={onFinish}
-                        initialValues={{ remember: true }}
+                        initialValues={{ remember: !!document.cookie.includes("authToken=") }}
                     >
                         <Form.Item
                             name="username"
@@ -93,12 +110,8 @@ const Login: React.FC = () => {
                                 allowClear={{ clearIcon: <CloseCircleOutlined className={styles["icon"]} /> }}
                             />
                         </Form.Item>
-                        <Form.Item 
-                            name="remember" 
-                            valuePropName="checked">
-                            <Checkbox>
-                                {"Remember me"}
-                            </Checkbox>
+                        <Form.Item name="remember" valuePropName="checked">
+                            <Checkbox>{"Remember me"}</Checkbox>
                         </Form.Item>
                         <Form.Item>
                             <Button
@@ -111,20 +124,10 @@ const Login: React.FC = () => {
                                 {"Log In"}
                             </Button>
                         </Form.Item>
-                        <Divider 
-                            plain={true}>
-                            {"New to Living History?"}
-                        </Divider>
-                        <Form.Item 
-                            className={styles["form__item"]}>
-                            <Link 
-                                href="/signup">
-                                <Button
-                                    className={styles["link__button"]}
-                                    type="default"
-                                    htmlType="submit"
-                                    block
-                                >
+                        <Divider plain={true}>{"New to Living History?"}</Divider>
+                        <Form.Item className={styles["form__item"]}>
+                            <Link href="/signup">
+                                <Button className={styles["link__button"]} type="default" htmlType="submit" block>
                                     {"Create your account"}
                                 </Button>
                             </Link>
