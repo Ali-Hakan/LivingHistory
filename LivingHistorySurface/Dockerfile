@@ -1,8 +1,7 @@
-FROM node:16-alpine
-WORKDIR /my-app
-COPY package*.json ./
-RUN npm install
+FROM node:18.16
+WORKDIR /app
+COPY package*.json .
+RUN npm i
 COPY . .
-RUN npm run build
 EXPOSE 3000
 CMD ["npm", "start"]
