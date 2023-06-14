@@ -13,17 +13,17 @@ public interface StoryRepository extends JpaRepository<Story, Long> {
         @Query("SELECT DISTINCT s FROM Story s LEFT JOIN s.tags t LEFT JOIN s.locations l LEFT JOIN s.user u WHERE s.title LIKE :query OR s.content LIKE :query OR t = :query OR l.name LIKE :query OR u.nickname LIKE :query")
         List<Story> findAll(@Param("query") String query);
 
-        @Query("SELECT s FROM Story s " +
+        @Query("SELECT DISTINCT s FROM Story s " +
                         "LEFT JOIN s.tags t " +
                         "LEFT JOIN s.locations l " +
                         "LEFT JOIN s.user u " +
                         "LEFT JOIN s.dates d " +
                         "WHERE " +
-                        "(:nickname IS NULL OR u.nickname LIKE :nickname) AND " +
-                        "(:locations IS NULL OR l.name LIKE :locations) AND " +
-                        "(:content IS NULL OR s.content LIKE :content) AND " +
-                        "(:tags IS NULL OR t LIKE :tags) AND " +
-                        "(:title IS NULL OR s.title LIKE :title) AND " +
+                        "(:nickname is null OR u.nickname LIKE :nickname) AND " + 
+                        "(:locations is null OR l.name LIKE :locations) AND " +
+                        "(:content is null OR s.content LIKE :content) AND " +
+                        "(:tags is null OR t LIKE :tags) AND " +
+                        "(:title is null OR s.title LIKE :title) AND "+
                         "(d.startDate <= :startDate) AND " +
                         "(d.endDate >= :endDate)")
         List<Story> findAllAdvanced(@Param("nickname") String nickname,
