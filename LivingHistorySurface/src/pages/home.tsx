@@ -1390,7 +1390,7 @@ const Home: React.FunctionComponent = () => {
                                                                             onClick={() => handleItemClick(item)}
                                                                             type="link">{item.title}
                                                                         </Button>
-                                                                        <Text>{`Created on: ${new Date(item.dates[0].startDate.substring(0, 10)).toLocaleDateString('en-US', {
+                                                                        <Text>{`Created on: ${new Date(item.creationDate).toLocaleDateString('en-US', {
                                                                             year: "numeric",
                                                                             month: "long",
                                                                             day: "numeric"

@@ -168,9 +168,9 @@ public class StoryService {
             else
                 storyRequest.setContent(null);
         if (storyRequest.getStartDate() == null)
-            storyRequest.setStartDate(new SimpleDateFormat("yyyy-MM-dd").parse("1000-01-01"));
+            storyRequest.setStartDate(new SimpleDateFormat("yyyy-MM-dd").parse("9999-12-31"));
         if (storyRequest.getEndDate() == null)
-            storyRequest.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse("9999-12-31"));
+            storyRequest.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse("1000-01-01"));
 
         List<Story> stories = storyRepository.findAllAdvanced(storyRequest.getNickname(),
                 storyRequest.getLocations(),

@@ -31,9 +31,10 @@ public class StoryController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    public StoryController(StoryService storyService, UserService userService) {
+    public StoryController(StoryService storyService, UserService userService, JwtUtils jwtUtils) {
         this.storyService = storyService;
         this.userService = userService;
+        this.jwtUtils = jwtUtils;
     }
 
     @PostMapping("/createStory")
